@@ -59,7 +59,7 @@ async function parallel(liste,n,f){let i=0;await Promise.all(Array.from({length:
 /* ---------- Zustand ---------- */
 let S=Object.assign({offset:0,stat:{},statSym:{},dip:{},statTag:"",gesendet:{},posSt:{},bilanz:[],log:[],faelleLive:[],fehler:{},ausfall:[],letzt:0,news:{},zahlen:{d:"",s:[]},sigTag:{}},readJSON(SF,{}));
 let D={t:0,wer:WER,markt:{},kurse:{},signale:[],setups:{},bilanz:[],fehler:{}},V={},Z=null,FAELLE=[],TAGE={},LIVE={},POS={pos:[],einst:{}},EINST=null,geaendert=true;
-const STD={modus:"faktor",faktor:5,spreadZ:.4,spreadA:.1,gebuehr:1,einsatz:500,steuer:26.375,T:1,S:1,minP:60};EINST=Object.assign({},STD);
+const STD={modus:"faktor",faktor:10,spreadZ:.4,spreadA:.1,gebuehr:1,einsatz:500,steuer:26.375,T:1,S:1,minP:50,minT:2};EINST=Object.assign({},STD);
 function fehler(art,txt){S.fehler[art]={t:Date.now(),txt:String(txt).slice(0,160)};log("Fehler",art,txt)}
 function protokoll(typ,s,text,daten){S.log.push({t:Date.now(),typ,s,text,daten:daten||{}});if(S.log.length>1500)S.log=S.log.slice(-1200);geaendert=true}
 const sichern=()=>writeJSON(SF,S);
@@ -76,8 +76,8 @@ async function telegramEingang(warte){if(!TG)return sleep(warte*1000);const r=aw
     if(chat!==CHAT)continue;await befehl(m.text.trim().split(/\s+/)[0].toLowerCase().replace(/@.*/,""))}}
 async function befehl(c){const jetzt=Date.now();
   if(c==="/start"||c==="/hilfe")return senden(`🤖 <b>Day-Trader Bot</b>\n/jetzt – aktuelle Einstiege\n/meine – deine offenen Trades\n/status – läuft alles?\n\nEilige Meldungen kommen mit 🚨.`,{knopf:["App öffnen",APP]});
-  if(c==="/jetzt"){const l=D.signale.filter(x=>x.bis>jetzt).map(x=>({x,b:K.bewerte(EINST,x,EINST.T,EINST.S,hebel())})).filter(o=>o.b).sort((a,b)=>b.b.p-a.b.p).slice(0,6);
-    return senden(l.length?`📋 <b>Aktive Einstiege</b>\n`+l.map(o=>`${o.b.p>=.65?"🟢":o.b.p>=.55?"🟡":"⚪"} <b>${esc(o.x.n)}</b> ${o.x.dir==="short"?"SHORT ↘":"LONG ↗"} ${Math.round(o.b.p*100)} % · bis ${uhr(o.x.bis)} · Ø ${eu(o.b.eEv)}`).join("\n"):"Gerade kein Einstieg. Ich melde mich, sobald einer kommt.",{knopf:["App öffnen",APP]})}
+  if(c==="/jetzt"){const l=D.signale.filter(x=>x.bis>jetzt).map(x=>({x,b:K.bewerte(EINST,x,EINST.T,EINST.S,hebel())})).filter(o=>o.b).sort((a,b)=>b.b.eEv-a.b.eEv).slice(0,6);
+    return senden(l.length?`📋 <b>Aktive Einstiege</b>\n`+l.map(o=>`${o.b.ev>0&&o.b.t>=2?"🟢":o.b.ev>0?"🟡":"⚪"} <b>${esc(o.x.n)}</b> ${o.x.dir==="short"?"SHORT ↘":"LONG ↗"} · Gewinn-Chance ${Math.round(o.b.pPlus*100)} % · bis ${uhr(o.x.bis)} · Ø ${eu(o.b.eEv)}`).join("\n"):"Gerade kein Einstieg. Ich melde mich, sobald einer kommt.",{knopf:["App öffnen",APP]})}
   if(c==="/meine"){const l=POS.pos.map(x=>({x,s:S.posSt[x.id]})).filter(o=>o.s);return senden(l.length?`📈 <b>Deine Trades</b>\n`+l.map(o=>`${o.x.ueb?"🧪 ":""}<b>${esc(o.x.n)}</b> ${eu(o.s.net)} · ${TUN[o.s.st][1]}`).join("\n"):"Keine offenen Trades.",{knopf:["App öffnen",APP+"#meine"]})}
   if(c==="/status"){const f=Object.entries(S.fehler).filter(([,v])=>jetzt-v.t<36e5);return senden(`ℹ️ <b>Status</b>\nLäuft auf: ${WER}\nKurse: ${D.t?uhr(D.t):"noch keine"}\nStatistik: ${S.statTag||"noch keine"}\nTrades überwacht: ${POS.pos.length}${f.length?"\n\n⚠️ "+f.map(([k,v])=>`${k}: ${esc(v.txt)}`).join("\n⚠️ "):"\nKeine Fehler."}`)}
   return senden("Unbekannter Befehl. /hilfe zeigt alle.")}
@@ -155,14 +155,14 @@ async function scan(m){const M=MARKT[m],jetzt=Date.now(),z=zeit(M.tz);let R=null
   if(S.monatTag!==z.date+m){S.monatTag=z.date+m;await parallel(M.liste.map(x=>x[0]),4,async s=>{const r=await yahoo(s,"1mo","1d");if(V[s])V[s]["1M"]=r.B.t.map((t,j)=>[t*1000,+r.B.c[j].toFixed(3)])})}
   if(!E.TEST_ALLE)D.signale=D.signale.filter(x=>jetzt-x.t<3*36e5);geaendert=true}
 async function neuesSignal(x){x.news=await nachrichten(x.s);if(x.news.g==="negativ"&&!x.block)x.block="Schlechte Nachricht heute";
-  const b=K.bewerte(EINST,x,EINST.T,EINST.S,hebel());if(!b)return;const p=Math.round(b.p*100);
-  protokoll("signal",x.s,`Signal: ${x.n} ${x.dir==="short"?"SHORT":"LONG"} ${p} %`,{Muster:x.setupN,Trefferquote:p+" %","Ziel/Stop":`${pz(EINST.T,2)} / ${pz(-EINST.S,2)}`,Fälle:`${x.nS} dieser Aktie, ${x.nT} gesamt`,Nachrichten:x.news.g,Gründe:x.warum.slice(1).join(" · "),Sperre:x.block||"–"});
-  if(x.block||b.p<EINST.minP/100||b.ev<=0)return;const key=`${x.s}:${x.dir}`;if(Date.now()-(S.sigTag[key]||0)<20*6e4)return;S.sigTag[key]=Date.now();
+  const b=K.bewerte(EINST,x,EINST.T,EINST.S,hebel());if(!b)return;const p=Math.round(b.pPlus*100),sich=b.t>=3?"sehr gut belegt":b.t>=2?"gut belegt":"wenig belegt";
+  protokoll("signal",x.s,`Signal: ${x.n} ${x.dir==="short"?"SHORT":"LONG"} ${p} %`,{Muster:x.setupN,"Gewinn-Chance":p+" %","Ziel zuerst":Math.round(b.p*100)+" %","Ø nach Kosten":eu(b.eEv),Sicherheit:`${sich} (t=${b.t.toFixed(1)})`,Hebel:"×"+hebel(),"Ziel/Stop":`${pz(EINST.T,2)} / ${pz(-EINST.S,2)}`,Fälle:`${x.nS} dieser Aktie, ${x.nT} gesamt`,Nachrichten:x.news.g,Gründe:x.warum.slice(1).join(" · "),Sperre:x.block||"–"});
+  if(x.block||b.ev<=0||b.t<(EINST.minT??2)||b.pPlus<EINST.minP/100)return;const key=`${x.s}:${x.dir}`;if(Date.now()-(S.sigTag[key]||0)<20*6e4)return;S.sigTag[key]=Date.now();
   const d=x.dir==="short"?-1:1,zl=x.p0*(1+d*EINST.T/100),st=x.p0*(1-d*EINST.S/100),cur=x.cur==="USD"?"$":"€",richt=b.richt||b.min*2||30;
-  await senden(`🚨 <b>EINSTIEG: ${esc(x.n)} ${x.dir==="short"?"SHORT ↘":"LONG ↗"}</b> ${p>=65?"🟢":"🟡"} ${p} %\n`+
+  await senden(`🚨 <b>EINSTIEG: ${esc(x.n)} ${x.dir==="short"?"SHORT ↘":"LONG ↗"}</b> 🟢 Gewinn-Chance ${p} %\n`+
     `⏱ Kaufen bis <b>${uhr(x.bis)}</b> · Aktie ${d<0?"über":"unter"} ${nf(x.p0*(1+d*EINST.T*.25/100))} ${cur}\n`+
     `🎯 Ziel ${nf(zl)} ${cur} (${pz(d*EINST.T,2)}) → <b>${eu(b.eWin)}</b>\n🛑 Stop ${nf(st)} ${cur} → ${eu(b.eLoss)}\n`+
-    `⌛ Ziel meist nach ~${b.min} Min. · Richtwert bis ${uhr(x.t+richt*6e4)}\n📊 ${x.nS} Fälle dieser Aktie, ${x.nT} gesamt · Ø ${eu(b.eEv)} nach Kosten\n📰 Nachrichten: ${x.news.g}`,{knopf:["In der App öffnen",APP+"#jetzt"]})}
+    `⌛ Ziel meist nach ~${b.min} Min. · Richtwert bis ${uhr(x.t+richt*6e4)}\n📊 Hebel ×${hebel()} · Ø ${eu(b.eEv)} nach Kosten · ${sich}\n🎯 Ziel zuerst ${Math.round(b.p*100)} % · Stop zuerst ${Math.round(b.pl*100)} % · Rest: Richtzeit\n📰 Nachrichten: ${x.news.g}`,{knopf:["In der App öffnen",APP+"#jetzt"]})}
 
 /* ---------- Offene Trades überwachen ---------- */
 const TUN={halten:["⏳","HALTEN"],ziel:["🎯","JETZT VERKAUFEN – Ziel erreicht"],stop:["🛑","SOFORT VERKAUFEN – Stop erreicht"],dreht:["⚠️","VERKAUFEN – lieber jetzt sichern"],

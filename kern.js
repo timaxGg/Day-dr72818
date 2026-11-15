@@ -83,16 +83,17 @@ function ausgang(P,i,d){const B=P.B,e=B.o[i+1];if(!(e>0)||i+1>P.de[i])return nul
 
 /* ---------- Statistik ---------- */
 // Je Kombination: [Fälle, Ziel zuerst, Stop zuerst, Summe Rendite bei „Zeit um“, Summe Minuten bis Ziel, 24er-Histogramm Minuten bis Ziel]
-const leer=()=>Array.from({length:NG},()=>[0,0,0,0,0,new Array(24).fill(0)]);
-function zaehle(st,a){for(let g=0;g<NG;g++){const [res,min,ret]=a.r[g],z=st[g];z[0]++;if(res>0){z[1]++;z[4]+=min;z[5][Math.min(23,Math.max(0,Math.ceil(min/5)-1))]++}else if(res<0)z[2]++;else z[3]+=ret}}
-function kompakt(st){return st.map(z=>[z[0],z[1],z[2],+z[3].toFixed(2),z[4],z[5].join(".")])}
+const TOH=31,toBucket=r=>Math.max(0,Math.min(TOH-1,Math.round((r+1.5)*10))); // Verteilung der Ergebnisse bei „Zeit um“: −1,5 % … +1,5 % in 0,1-%-Schritten
+const leer=()=>Array.from({length:NG},()=>[0,0,0,0,0,new Array(24).fill(0),0,new Array(TOH).fill(0)]);
+function zaehle(st,a){for(let g=0;g<NG;g++){const [res,min,ret]=a.r[g],z=st[g];z[0]++;if(res>0){z[1]++;z[4]+=min;z[5][Math.min(23,Math.max(0,Math.ceil(min/5)-1))]++}else if(res<0)z[2]++;else{z[3]+=ret;z[6]+=ret*ret;z[7][toBucket(ret)]++}}}
+function kompakt(st){return st.map(z=>[z[0],z[1],z[2],+z[3].toFixed(2),z[4],z[5].join("."),+z[6].toFixed(3),z[7].join(".")])}
 function p80aus(h,w){if(!w)return null;const a=String(h).split(".").map(Number);let s=0;for(let k=0;k<a.length;k++){s+=a[k];if(s>=.8*w)return (k+1)*5}return 120}
 // Geschrumpfte Wahrscheinlichkeit: wenige Fälle dieser Aktie → Richtung Durchschnitt aller Aktien mit demselben Muster ziehen
-function wahrsch(eigen,alle,k=25){const p=[],pt=[],to=[],min=[],p80=[];let nS=0,nT=0;
-  for(let g=0;g<NG;g++){const a=alle&&alle[g]||[0,0,0,0,0,""],e=eigen&&eigen[g]||[0,0,0,0,0,""];nS=e[0];nT=a[0];if(a[0]<30){p.push(null);pt.push(null);to.push(0);min.push(null);p80.push(null);continue}
+function wahrsch(eigen,alle,k=25){const p=[],pt=[],to=[],min=[],p80=[],toSq=[],toH=[];let nS=0,nT=0;
+  for(let g=0;g<NG;g++){const a=alle&&alle[g]||[0,0,0,0,0,""],e=eigen&&eigen[g]||[0,0,0,0,0,""];nS=e[0];nT=a[0];if(a[0]<30){p.push(null);pt.push(null);to.push(0);min.push(null);p80.push(null);toSq.push(0);toH.push(null);continue}
     const pa=a[1]/a[0],pta=(a[0]-a[1]-a[2])/a[0],pe=(e[1]+k*pa)/(e[0]+k),pte=((e[0]-e[1]-e[2])+k*pta)/(e[0]+k),toA=a[0]-a[1]-a[2]>0?a[3]/(a[0]-a[1]-a[2]):0;
-    p.push(+pe.toFixed(3));pt.push(+pte.toFixed(3));to.push(+toA.toFixed(3));min.push(a[1]?Math.round(a[4]/a[1]):null);p80.push(p80aus(a[5],a[1]))}
-  return {p,pt,to,min,p80,nS,nT}}
+    p.push(+pe.toFixed(3));pt.push(+pte.toFixed(3));to.push(+toA.toFixed(3));min.push(a[1]?Math.round(a[4]/a[1]):null);p80.push(p80aus(a[5],a[1]));const nt=a[0]-a[1]-a[2];toSq.push(nt&&a[6]!=null?+(a[6]/nt).toFixed(4):+(toA*toA+.25).toFixed(4));toH.push(a[7]||null)}
+  return {p,pt,to,min,p80,toSq,toH,nS,nT}}
 
 /* ---------- Dip: lohnt sich das Warten auf einen Rücksetzer? ---------- */
 // Für jedes Muster: Wie weit lief der Kurs bei späteren Gewinnern erst gegen uns (Median)? Wie oft kam dieser Rücksetzer überhaupt,
@@ -108,8 +109,12 @@ function dipStat(P,liste,d,T,S){const ti=GT.indexOf(T),si=GS.indexOf(S),g=ti*4+s
 /* ---------- Kosten und Ergebnis in Euro ---------- */
 // E = Einstellungen {spreadZ, spreadA, gebuehr, einsatz, steuer}; f = Hebel (Faktor). Spread gilt beim Faktor-Zertifikat (f>1), sonst der der Aktie.
 const spreadF=(E,f)=>f>1?+E.spreadZ:+E.spreadA,kostenF=(E,f,ein=E.einsatz)=>spreadF(E,f)+2*E.gebuehr/ein*100,nachSt=(E,v)=>v>0?v*(1-E.steuer/100):v;
+// Gewinn-Chance: Ziel erreicht ODER bei „Zeit um“ mehr als die Kosten gelaufen. Sicherheit: wie viele Standardfehler der Ø nach Kosten über null liegt.
 function bewerte(E,x,T,S,f,ein=E.einsatz){const g=gi(T,S),p=x.p[g];if(p==null)return null;const pt=x.pt[g]||0,pl=Math.max(0,1-p-pt),k=kostenF(E,f,ein),win=f*T-k,loss=-f*S-k,to=f*(x.to[g]||0)-k,ev=p*win+pl*loss+pt*to,eur=v=>ein*v/100;
-  return {g,p,pt,pl,win,loss,to,ev,f,k,eWin:nachSt(E,eur(win)),eLoss:eur(loss),eEv:nachSt(E,eur(ev)),min:x.min[g]||null,richt:x.p80&&x.p80[g]||null}}
+  const ex2=p*(f*T)**2+pl*(f*S)**2+pt*f*f*((x.toSq&&x.toSq[g])||((x.to[g]||0)**2+.25)),roh=ev+k,sd=Math.sqrt(Math.max(1e-9,ex2-roh*roh)),n=Math.max(1,x.nT||30),t=ev/(sd/Math.sqrt(n));
+  let toPlus=.5;const h=x.toH&&x.toH[g];if(h){const a=String(h).split(".").map(Number),sum=a.reduce((q,v)=>q+v,0),thr=k/f;if(sum){let o=0;a.forEach((v,i)=>{if(-1.5+i*.1>thr)o+=v});toPlus=o/sum}}
+  const pPlus=p+pt*toPlus,pZvS=p+pl>0?p/(p+pl):0;
+  return {g,p,pt,pl,win,loss,to,ev,f,k,t,pPlus,pZvS,eWin:nachSt(E,eur(win)),eLoss:eur(loss),eEv:nachSt(E,eur(ev)),min:x.min[g]||null,richt:x.p80&&x.p80[g]||null}}
 
 /* ---------- Ähnliche Fälle ---------- */
 // Fall-Format: {s,t,k,d,f:[rsi,vwAbst,dch,min,mkt,rv,atr,schnell],pf:[13 Werte ×100],r:"16 Zeichen w/l/z",tm:[16 Minuten bis Entscheidung],nw?:Nachrichten,zh?:Tage bis Zahlen}
