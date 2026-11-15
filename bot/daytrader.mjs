@@ -80,6 +80,7 @@ async function senden(text,o={}){if(!CHAT){log("(kein Chat)",WER==="test"?text:t
   const r=await tg("sendMessage",body);if(r&&!r.ok)fehler("telegram",r.description)}
 async function telegramEingang(warte){if(!TG)return sleep(warte*1000);const r=await tg("getUpdates",{offset:S.offset,timeout:warte,allowed_updates:["message"]});
   if(!r||!r.ok){if(r&&r.error_code===409)log("Telegram: anderer Bot-Lauf aktiv");else if(r&&r.error_code===401)fehler("telegram","TELEGRAM_TOKEN ist falsch (401)");else if(r)fehler("telegram",`${r.error_code}: ${r.description}`);await sleep(2000);return}
+  delete S.fehler.telegram; // Verbindung klappt wieder → alte Meldung weg
   for(const u of r.result||[]){S.offset=u.update_id+1;const m=u.message;if(!m||!m.text)continue;const chat=String(m.chat.id);
     if(!CHAT){await tg("sendMessage",{chat_id:chat,parse_mode:"HTML",text:`👋 Hallo! Deine Chat-ID ist:\n\n<code>${chat}</code>\n\nTrag sie bei GitHub als Secret <b>TELEGRAM_CHAT</b> ein (und auf dem Handy in der Datei .env). Danach schreibe ich dir.`});continue}
     if(chat!==CHAT){fehler("telegram",`Nachricht von Chat ${chat}, eingetragen ist TELEGRAM_CHAT=${CHAT} – stimmt die Chat-ID?`);continue}await befehl(m.text.trim().split(/\s+/)[0].toLowerCase().replace(/@.*/,""))}}
