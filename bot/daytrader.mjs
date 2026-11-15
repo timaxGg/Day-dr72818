@@ -240,7 +240,7 @@ export async function main(){const start=Date.now();log("Start",WER,REPO);
     sichern();
     if(WER==="test")break;
     if(WER==="github"){if(jetzt-tick.fremd>60e3){tick.fremd=jetzt;const f=fremderLauf();if(f){log(`${f} ist wieder da – GitHub übergibt.`);break}}
-      if(!offenM.length&&!POS.pos.length&&!bald&&jetzt-start>100e3)break}
+      if(!offenM.length&&!POS.pos.length&&!bald&&jetzt-start>(+E.RUHE_MIN||14)*6e4)break} // auch nachts ~14 Min. wach bleiben, damit Telegram-Befehle schnell beantwortet werden
     if(LAUF_MIN&&jetzt-start>LAUF_MIN*6e4)break;
     await telegramEingang(offenM.length||POS.pos.length?15:25)}
   await veroeffentlichen(true);sichern();log("Ende")}
