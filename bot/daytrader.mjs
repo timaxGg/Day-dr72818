@@ -13,7 +13,7 @@ const REPO=E.GITHUB_REPOSITORY||E.REPO||"timaxGg/Day-dr72818";
 const APP=(E.APP_URL||`https://${REPO.split("/")[0].toLowerCase()}.github.io/${REPO.split("/")[1]}/`).replace(/\/?$/,"/");
 const LAUF_MIN=+(E.LAUF_MIN||(WER==="github"?330:360)); // GitHub: höchstens 5,5 Std. am Stück; Handy/Server: alle 6 Std. kurz neu starten (holt dabei Updates)
 const P=f=>`${ROOT}/${f}`,SF=P(".state/stand.json"),OUT=P(".state/out");
-const log=(...a)=>console.log(new Date().toISOString().slice(11,19),...a);
+const log=(...a)=>console.log(new Date().toLocaleTimeString("de-DE",{timeZone:"Europe/Berlin"}),...a);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const readJSON=(f,d)=>{try{return JSON.parse(fs.readFileSync(f,"utf8"))}catch(e){return d}};
 const writeJSON=(f,o)=>{fs.mkdirSync(f.replace(/\/[^/]*$/,""),{recursive:true});fs.writeFileSync(f,JSON.stringify(o))};
@@ -74,16 +74,16 @@ function protokoll(typ,s,text,daten){S.log.push({t:Date.now(),typ,s,text,daten:d
 const sichern=()=>writeJSON(SF,S);
 
 /* ---------- Telegram ---------- */
-async function tg(method,body){if(!TG||DRY)return null;try{const r=await fetch(`https://api.telegram.org/bot${TG}/${method}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});return await r.json()}catch(e){fehler("telegram",e.message);return null}}
+async function tg(method,body){if(!TG||DRY)return null;try{const r=await fetch(`https://api.telegram.org/bot${TG}/${method}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body),signal:AbortSignal.timeout(((body&&body.timeout)||0)*1000+20000)});return await r.json()}catch(e){fehler("telegram",`${e.message}${e.cause&&e.cause.code?" ("+e.cause.code+")":""}`);return null}}
 async function senden(text,o={}){if(!CHAT){log("(kein Chat)",WER==="test"?text:text.slice(0,80));return}
   const body={chat_id:CHAT,text:text.slice(0,4000),parse_mode:"HTML",disable_web_page_preview:true};if(o.knopf)body.reply_markup={inline_keyboard:[[{text:o.knopf[0],url:o.knopf[1]}]]};
   const r=await tg("sendMessage",body);if(r&&!r.ok)fehler("telegram",r.description)}
 async function telegramEingang(warte){if(!TG)return sleep(warte*1000);const r=await tg("getUpdates",{offset:S.offset,timeout:warte,allowed_updates:["message"]});
-  if(!r||!r.ok){if(r&&r.error_code===409)log("Telegram: anderer Bot-Lauf aktiv");await sleep(2000);return}
+  if(!r||!r.ok){if(r&&r.error_code===409)log("Telegram: anderer Bot-Lauf aktiv");else if(r&&r.error_code===401)fehler("telegram","TELEGRAM_TOKEN ist falsch (401)");else if(r)fehler("telegram",`${r.error_code}: ${r.description}`);await sleep(2000);return}
   for(const u of r.result||[]){S.offset=u.update_id+1;const m=u.message;if(!m||!m.text)continue;const chat=String(m.chat.id);
     if(!CHAT){await tg("sendMessage",{chat_id:chat,parse_mode:"HTML",text:`👋 Hallo! Deine Chat-ID ist:\n\n<code>${chat}</code>\n\nTrag sie bei GitHub als Secret <b>TELEGRAM_CHAT</b> ein (und auf dem Handy in der Datei .env). Danach schreibe ich dir.`});continue}
-    if(chat!==CHAT)continue;await befehl(m.text.trim().split(/\s+/)[0].toLowerCase().replace(/@.*/,""))}}
-async function befehl(c){const jetzt=Date.now();
+    if(chat!==CHAT){fehler("telegram",`Nachricht von Chat ${chat}, eingetragen ist TELEGRAM_CHAT=${CHAT} – stimmt die Chat-ID?`);continue}await befehl(m.text.trim().split(/\s+/)[0].toLowerCase().replace(/@.*/,""))}}
+async function befehl(c){const jetzt=Date.now();log("Telegram-Befehl",c);
   if(c==="/start"||c==="/hilfe")return senden(`🤖 <b>Day-Trader Bot</b>\n/jetzt – aktuelle Einstiege\n/meine – deine offenen Trades\n/status – läuft alles?\n\nEilige Meldungen kommen mit 🚨.`,{knopf:["App öffnen",APP]});
   if(c==="/jetzt"){const l=D.signale.filter(x=>x.bis>jetzt).map(x=>({x,b:K.bewerte(EINST,x,EINST.T,EINST.S,hebel())})).filter(o=>o.b).sort((a,b)=>b.b.eEv-a.b.eEv).slice(0,6);
     return senden(l.length?`📋 <b>Aktive Einstiege</b>\n`+l.map(o=>`${o.b.ev>0&&o.b.t>=2?"🟢":o.b.ev>0?"🟡":"⚪"} <b>${esc(o.x.n)}</b> ${o.x.dir==="short"?"SHORT ↘":"LONG ↗"} · Gewinn-Chance ${Math.round(o.b.pPlus*100)} % · bis ${uhr(o.x.bis)} · Ø ${eu(o.b.eEv)}`).join("\n"):"Gerade kein Einstieg. Ich melde mich, sobald einer kommt.",{knopf:["App öffnen",APP]})}

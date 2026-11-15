@@ -5,6 +5,7 @@ cd "$(dirname "$0")" || exit 1
 if [ ! -f .env ]; then echo "Die Datei .env fehlt. Siehe ANLEITUNG.md, Teil 3."; exit 1; fi
 set -a; . ./.env; set +a
 export WER="${WER:-handy}"
+export NODE_OPTIONS="--dns-result-order=ipv4first ${NODE_OPTIONS:-}" # manche WLANs/Handys haben Probleme mit IPv6
 REPO="${REPO:-timaxGg/Day-dr72818}"
 git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
 command -v termux-wake-lock >/dev/null 2>&1 && termux-wake-lock
