@@ -8,7 +8,7 @@ const GT=[.5,.75,1,1.5],GS=[.5,.75,1,1.5],gi=(T,S)=>Math.max(0,GT.indexOf(+T))*4
 const CS={EUR:"€",USD:"$"};
 let MAIN={};try{MAIN=(JSON.parse(localStorage.getItem("kah")||"{}")||{}).settings||{}}catch(e){}
 const STD={repo:"timaxGg/Day-dr72818",richtung:"beide",halt:0,minT:2,modus:"faktor",faktor:10,spreadZ:.4,spreadA:.1,gebuehr:1,einsatz:500,steuer:26.375,T:1,S:1,minP:50,ueb:true,konto:1000,ton:true,ghToken:"",syncPass:"",fhKey:""};
-let E=Object.assign({},STD);try{Object.assign(E,JSON.parse(localStorage.getItem("dt-einst")||"{}"))}catch(e){}if(!E.v2){E.halt=0;E.v2=1}if(!E.v3){E.faktor=Math.max(10,+E.faktor||10);E.minP=50;E.minT=2;E.v3=1}
+let E=Object.assign({},STD);try{Object.assign(E,JSON.parse(localStorage.getItem("dt-einst")||"{}"))}catch(e){}if(!E.v2){E.halt=0;E.v2=1}if(!E.v3){E.faktor=Math.max(10,+E.faktor||10);E.minP=50;E.minT=2;E.v3=1}if(!E.v4){E.modus="ko";E.v4=1}
 let M={pos:[],verkauft:[],updatedAt:0};try{Object.assign(M,JSON.parse(localStorage.getItem("dt-mein")||"{}"))}catch(e){}
 let tab="jetzt",zDir="long",zMarkt="us",zSym="",D=null,Z=null,DEMO=false,LIVE={},offen=null,fehler="",PE={};
 const tok=()=>E.ghToken||MAIN.ghToken||"",pass=()=>E.syncPass||MAIN.syncPass||"",fhk=()=>E.fhKey||MAIN.fhKey||"";
@@ -28,7 +28,7 @@ const mmss=ms=>{if(ms<=0)return "0:00";const s=Math.round(ms/1000),m=Math.floor(
 
 /* ---------- Rechnung: aus Aktien-Bewegung wird Ergebnis in Euro ---------- */
 const HEBEL=[1,3,5,10,15,20],HB={};let KF=null,RUHIG=false;
-const F=()=>E.modus==="faktor"?+E.faktor:1;
+const F=()=>E.modus==="aktie"?1:+E.faktor;
 const spreadF=f=>f>1?+E.spreadZ:+E.spreadA,spread=()=>spreadF(F());
 const kostenF=(f,ein=E.einsatz)=>spreadF(f)+2*E.gebuehr/ein*100,kosten=()=>kostenF(F()); // % vom Einsatz für Kauf + Verkauf zusammen
 const nachSt=v=>v>0?v*(1-E.steuer/100):v;
@@ -44,7 +44,7 @@ function sicherste(x){let best=null;for(const T of GT)for(const S of GS){const b
 const roh=f=>`https://raw.githubusercontent.com/${E.repo}/daten/${f}?t=${Math.floor(Date.now()/3e4)}`;
 async function hole(f){if(tok()){const r=await fetch(`https://api.github.com/repos/${E.repo}/contents/${f}?ref=daten`,{headers:{Authorization:`Bearer ${tok()}`,Accept:"application/vnd.github.raw+json"},cache:"no-store"});if(r.ok)return r.json()}
   const r=await fetch(roh(f),{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}
-let FAELLE=null,VERL={},VERL_T=0,BOTLOG=[],TAGE=null;
+let SYNC=null,FAELLE=null,VERL={},VERL_T=0,BOTLOG=[],TAGE=null;
 async function laden(){try{const d=await hole("day.json");if(!d||!d.t)throw new Error("leer");
     if(DEMO){M.pos=M.pos.filter(p=>!p.demo);M.meld=[];M.log=(M.log||[]).filter(e=>!e.demo)}D=d;DEMO=false;fehler="";
     for(const x of D.signale||[])if(x.p0&&!x.px)x.px=x.p0;
@@ -113,7 +113,7 @@ const dirB=x=>`<span class="dirb ${istShort(x)?"s":"l"}">${istShort(x)?"SHORT �
 const HIST={}; // Verlauf des Netto-Gewinns je Position (nur solange die App offen ist)
 function stand(x){const p=preis(x.s)??x.basis,zu=(D&&D.markt&&D.markt[x.m]&&D.markt[x.m].zu)||0,s=KERN.stand(E,x,p,zu,Date.now(),DEMO?null:FAELLE);x.peak=s.peak;x.peakU=s.peakU;return s}
 // [Farbe, großes Wort, Überschrift]
-const TUN={dreht:["raus","VERKAUFEN","Lieber jetzt sichern"],halten:["halten","HALTEN","Läuft nach Plan"],ziel:["gut","VERKAUFEN","Ziel erreicht 🎯"],stop:["raus","VERKAUFEN","Stop erreicht"],
+const TUN={ko:["raus","KNOCK-OUT","Zertifikat ist wertlos"],konah:["raus","SOFORT VERKAUFEN","Knock-out ist nah!"],dreht:["raus","VERKAUFEN","Lieber jetzt sichern"],halten:["halten","HALTEN","Läuft nach Plan"],ziel:["gut","VERKAUFEN","Ziel erreicht 🎯"],stop:["raus","VERKAUFEN","Stop erreicht"],
   schmilzt:["raus","VERKAUFEN","Gewinn schmilzt"],sinkt:["acht","ACHTUNG","Gewinn geht zurück"],zeit:["acht","DU ENTSCHEIDEST","Richtzeit erreicht"],schluss:["acht","ACHTUNG","Börse schließt bald"]};
 function grund(x,s){const zb=(x.T-s.u);return {halten:`Noch ${nf(Math.max(0,zb),2)} % ${istShort(x)?"Fall":"Anstieg"} der Aktie bis zum Ziel (dann ≈ ${eu(nachSt(s.zielE))}). Ich melde mich, wenn du raus solltest.`,
   ziel:`Die Aktie ist ${istShort(x)?"um "+nf(x.T,1)+" % gefallen":"um "+nf(x.T,1)+" % gestiegen"} – Ziel geschafft. Gewinn jetzt mitnehmen, nicht gierig werden.`,
@@ -122,6 +122,7 @@ function grund(x,s){const zb=(x.T-s.u);return {halten:`Noch ${nf(Math.max(0,zb),
   schmilzt:`Bester Stand war ${eu(s.peakE)}, jetzt nur noch ${eu(s.net)}. Raus, bevor es ins Minus dreht.`,
   sinkt:s.linieE!=null?`Bester Stand war ${eu(s.peakE)}. Noch halten – fällt es unter ${eu(s.linieE)}, sage ich „Verkaufen“.`:`Halten bringt gerade kaum mehr als verkaufen. Ich sage dir, sobald verkaufen klar besser ist.`,
   zeit:`Bis hierhin kam das Ziel meistens schon. Ab jetzt ist es deine Entscheidung: ${s.net>0?"Plus mitnehmen oder weiter halten":"halten oder Verlust klein halten"}. Gewinn- und Verlustschutz laufen weiter.`,
+  ko:`Die Aktie hat die Knock-out-Schwelle ${kurs(s.ko,x.cur)} erreicht. Das Zertifikat ist wertlos – in Trade Republic prüfen und als verkauft eintragen.`,konah:`Nur noch ${pz(s.koAbst,2).replace("+","")} bis zum Knock-out bei ${kurs(s.ko,x.cur)}. Dort ist alles weg. Sofort raus!`,
   schluss:`Faktor-Zertifikate über Nacht sind riskant: Der Kurs kann morgens mit einem Sprung starten. Halten nur bewusst.`}[s.st]}
 
 /* ---------- Dip-Einstieg: nicht sofort kaufen, sondern beim typischen Rücksetzer (Limit) ---------- */
@@ -144,7 +145,7 @@ function hebelChips(id,f,attr="hb"){return `<div class="hebel"><span>Hebel</span
 function ergebnis(b,dip){return `<div class="erg"><div class="g"><i>🎯 Wenn Ziel</i><b>${eu(b.eWin)}</b></div><div class="r"><i>🛑 Wenn Stop</i><b>${eu(b.eLoss)}</b></div><div><i>${dip?"Ø wenn Dip kommt":"Ø pro Trade"}</i><b class="${kl(b.eEv)}">${eu(b.eEv)}</b></div></div>`}
 function signalKarte(x,i=0,voll){const f=HB[x.id]??F(),b=bewerte(x,xT(x),xS(x),f),p=preis(x.s)??x.p0,d=dOf(x),weg=d*(p/x.p0-1)*100,zl=x.p0*(1+d*xT(x)/100),st=x.p0*(1-d*xS(x)/100),pl=plan(x,b),pz0=pausiert(x.s),alt=!!(M.beob&&M.beob[x.s]&&x.t<M.beob[x.s]),verp=weg>xT(x)*.35||alt,drin=M.pos.some(q=>q.s===x.s),stark=b.p>=E.minP/100&&b.ev>0&&(DEMO||b.t>=E.minT)&&x.bis>Date.now()&&!verp&&!drin&&!x.block;
   return `<div class="card sig ${RUHIG?"":"fade"} ${stark?"eilig":""}" style="--d:${i}" data-sig="${x.id}">
-   <div class="kopf">${ring(b.p)}<div class="nm"><b>${esc(x.n)} ${dirB(x)}</b><span>${x.m==="us"?"🇺🇸":"🇩🇪"} ${esc(x.setupN)}</span></div>
+   <div class="kopf">${ring(b.p)}<div class="nm"><b>${esc(x.n)} ${dirB(x)}</b><span>${x.m==="us"?"🇺🇸":"🇪🇺"} ${esc(x.setupN)}</span></div>
     <div class="px"><span data-px="${esc(x.s)}">${kurs(p,x.cur)}</span><small class="${kl(weg)}">${pz(weg,2)} für dich</small></div></div>
    ${drin?`<div class="sperre">📌 Du bist schon drin<small>Kein zweiter Kauf derselben Aktie.</small></div>`:x.block?`<div class="sperre">⛔ Kein Einstieg<small>${esc(x.block)}</small></div>`:alt?`<div class="sperre">🔄 Altes Signal von vor deinem Verkauf<small>Ich rechne ${esc(x.n)} neu und schlage dir nur etwas vor, wenn es sich lohnt.</small></div>`:verp?`<div class="sperre">⏭ Verpasst – nicht hinterherkaufen<small>Schon ${pz(weg,2)} gelaufen. Der Platz bis zum Ziel fehlt, das Risiko oben zu kaufen ist hoch.</small></div>`:eilBox(x)}
    ${!drin&&!alt?dipBox(x,f):""}
@@ -189,7 +190,7 @@ function seiteJetzt(){M.logged=M.logged||{};for(const x of D.signale||[])if(!M.l
   const em=empfohlen();
   if(em.length)h+=`<h2>⭐ Empfohlen heute <span class="n">beste Zeit je Aktie</span></h2><div class="card empfk">${em.map(empfZeile).join("")}<p class="small muted" style="margin-top:8px">Pro Aktie die halbe Stunde, in der ein Einstieg früher am öftesten geklappt hat (letzte 60 Handelstage, dein Ziel/Stop). <b>JETZT</b> = Fenster offen und Kurs nicht überhitzt. <b>ZU HEISS</b> = im Fenster, aber schon zu weit gelaufen. Ich warte dann auf einen Rücksetzer und melde mich.</p></div>`;
   const ks=Object.entries(D.kurse||{}).map(([s,k])=>({s,...k,ch:chanceJetzt(s,k.m)})).map(k=>({...k,c:k.ch?k.ch.c:null})).sort((a,b)=>(b.c??0)-(a.c??0));
-  h+=`<h2>👀 Beobachten <span class="n">Chance, wenn du jetzt kaufst</span></h2><div class="card fade" style="--d:3">${ks.map(k=>`<div class="row" data-ksheet="${esc(k.s)}"><div class="nm"><b>${esc(k.n)}</b><span>${k.m==="us"?"🇺🇸":"🇩🇪"} <span class="${kl(k.dp)}">${pz(k.dp)} heute</span></span></div><span class="px">${kurs(preis(k.s)??k.p,k.cur)}</span>${k.c!=null?`<span class="mini ${ampel(k.c)}">${k.ch.dir==="short"?"↘":"↗"} ${Math.round(k.c*100)} %</span>`:""}</div>`).join("")}</div>
+  h+=`<h2>👀 Beobachten <span class="n">Chance, wenn du jetzt kaufst</span></h2><div class="card fade" style="--d:3">${ks.map(k=>`<div class="row" data-ksheet="${esc(k.s)}"><div class="nm"><b>${esc(k.n)}</b><span>${k.m==="us"?"🇺🇸":"🇪🇺"} <span class="${kl(k.dp)}">${pz(k.dp)} heute</span></span></div><span class="px">${kurs(preis(k.s)??k.p,k.cur)}</span>${k.c!=null?`<span class="mini ${ampel(k.c)}">${k.ch.dir==="short"?"↘":"↗"} ${Math.round(k.c*100)} %</span>`:""}</div>`).join("")}</div>
    <p class="small muted">Prozent = wie oft ein Einstieg zu dieser Uhrzeit früher dein Ziel vor dem Stop erreicht hat, ohne Signal. ↗ = Long besser, ↘ = Short besser. Tippen zeigt den Kurs-Chart.</p>`;
   return h}
 /* ---------- Empfohlen: beste Zeitfenster je Aktie, mit Timer ---------- */
@@ -215,7 +216,7 @@ function seiteZeiten(){if(!Z)return `<div class="card">Die Zeiten-Statistik komm
   const werte=sl.map((t,i)=>{const [n,w]=(quelle[i]||[])[g]||[0,0];return {t,n,q:n?w/n:null}}),gueltig=werte.filter(v=>v.q!=null&&v.n>=30),best=gueltig.slice().sort((a,b)=>b.q-a.q)[0],schlecht=gueltig.slice().sort((a,b)=>a.q-b.q)[0];
   const syms=Object.entries(D.kurse||{}).filter(([,v])=>v.m===m);
   const bis=t=>{const [a,b]=t.split(":").map(Number),x=a*60+b+30;return `${String(x/60|0).padStart(2,"0")}:${String(x%60).padStart(2,"0")}`};
-  return `<div class="seg"><button data-zm="us" class="${m==="us"?"on":""}">🇺🇸 USA</button><button data-zm="de" class="${m==="de"?"on":""}">🇩🇪 Deutschland</button></div><div class="seg"><button data-zd="long" class="${zDir==="long"?"on":""}">LONG ↗ (steigt)</button><button data-zd="short" class="${zDir==="short"?"on":""}">SHORT ↘ (fällt)</button></div>
+  return `<div class="seg"><button data-zm="us" class="${m==="us"?"on":""}">🇺🇸 USA</button><button data-zm="de" class="${m==="de"?"on":""}">🇪🇺 Europa</button></div><div class="seg"><button data-zd="long" class="${zDir==="long"?"on":""}">LONG ↗ (steigt)</button><button data-zd="short" class="${zDir==="short"?"on":""}">SHORT ↘ (fällt)</button></div>
    <label class="f">Aktie<select id="zsym"><option value="">Alle Aktien zusammen</option>${syms.map(([s,v])=>`<option value="${esc(s)}" ${s===zSym?"selected":""}>${esc(v.n)}</option>`).join("")}</select></label>
    ${best?`<div class="card" style="margin-top:12px"><b>Am sichersten: ${DEMO?uhr(slotZeit(m,sl.indexOf(best.t)))+"–"+uhr(slotZeit(m,sl.indexOf(best.t))+18e5):best.t+"–"+bis(best.t)} Uhr</b><p class="small">${zDir==="short"?"Short-Einstieg":"Kauf"} in dieser halben Stunde: <b class="up">${Math.round(best.q*100)} %</b> erreichten das Ziel (${zDir==="short"?"Aktie":""} ${pz((zDir==="short"?-1:1)*E.T,E.T%1?2:0)}) vor dem Stop. ${schlecht?`Finger weg um ${schlecht.t} Uhr (${Math.round(schlecht.q*100)} %).`:""}</p></div>`:""}
    <div class="card">${werte.map((v,i)=>`<div class="slot ${i===k?"jetzt":""}"><span>${DEMO?uhr(slotZeit(m,i)):v.t}${i===k?" ◀":""}</span><div class="sb"><i style="width:${v.q!=null?v.q*100:0}%;background:${v.q==null?"none":v.q>=.65?"var(--up)":v.q>=.55?"var(--warn)":"var(--muted)"}"></i><em style="left:50%"></em></div><b>${v.q!=null?Math.round(v.q*100)+" %":"–"}</b></div>`).join("")}
@@ -239,6 +240,7 @@ function posKarte(x,i=0){const s=stand(x),t=TUN[s.st],cur=(D.kurse[x.s]||{}).cur
    ${sparkNet(x)}
    <div class="balken"><div class="be" style="left:${L(s.beU)}%"></div><div class="ich" style="left:${L(s.u)}%"></div></div>
    <div class="blab"><span>🛑 ${eu(s.stopE,0)}</span><span>Aktie ${pz(dOf(x)*s.u,2)} · ${kurs(s.p,cur)}</span><span>🎯 ${eu(nachSt(s.zielE),0)}</span></div>
+   ${s.ko?`<div class="koinfo ${s.koAbst<3?"nah":""}">💥 Knock-out bei <b>${kurs(s.ko,cur)}</b> · noch <b>${pz(s.koAbst,2).replace("+","")}</b> Abstand · Hebel jetzt <b>×${nf(Math.min(s.hebelJetzt,999),1)}</b></div>`:""}
    <div class="infos"><div><i>Bester Stand</i><b class="${kl(s.peakE)}">${eu(s.peakE)}</b></div><div><i>Verkaufen unter</i><b>${s.linieE!=null?eu(s.linieE):"–"}</b><small>${s.linieE!=null?"Gewinnschutz":"ab halbem Ziel"}</small></div>
     <div><i>Richtwert bis</i><b>${x.bis?uhr(x.bis):"–"}</b><small data-rest="${x.id}">${x.bis?(rest>0?"noch "+mmss(rest):"du entscheidest"):""}</small></div></div>
    <div class="knoepfe"><button class="btn ${t[0]==="raus"?"rot":t[0]==="gut"?"":"ghost"}" data-vk="${x.id}">${x.ueb?"Übung verkaufen":"Verkauft – eintragen"}</button><button class="btn ghost klein" data-del="${x.id}">Löschen</button></div></div>`}
@@ -281,9 +283,9 @@ function kursSvg(s,r,x){const pts=verlauf(s,r);KPTS[s]={pts,r,cur:(D.kurse[s]||{
     <div class="ktip" hidden></div></div>
    <div class="kach"><span>${zeitLabel(t0,r)}</span><span>${zeitLabel(t0+(t1-t0)/2,r)}</span><span>${r==="15m"||r==="1h"||r==="1d"?"jetzt":zeitLabel(t1,r)}</span></div>
    <p class="small muted">Finger auf den Chart legen und ziehen zeigt Kurs und Uhrzeit.${!DEMO&&istEU(s)?" DAX-Kurse: Lang & Schwarz (wie Trade Republic).":""}</p>`}
-const istEU=s=>/\.(DE|F)$/.test(s);
+const istEU=s=>/\.[A-Z]{1,3}$/.test(s);
 function kursSheet(s){const k=D.kurse[s];if(!k)return;offen=null;const c=chanceJetzt(s,k.m);
-  sheet(`<div class="kopf"><div class="nm"><b style="font-size:20px">${esc(k.n)}</b><span>${k.m==="us"?"🇺🇸":"🇩🇪"} ${esc(s)} · <span class="${kl(k.dp)}">${pz(k.dp)} heute</span></span></div><div class="px"><span data-px2="${esc(s)}" style="font-size:20px;font-weight:700">${kurs(preis(s)??k.p,k.cur)}</span></div></div>
+  sheet(`<div class="kopf"><div class="nm"><b style="font-size:20px">${esc(k.n)}</b><span>${k.m==="us"?"🇺🇸":"🇪🇺"} ${esc(s)} · <span class="${kl(k.dp)}">${pz(k.dp)} heute</span></span></div><div class="px"><span data-px2="${esc(s)}" style="font-size:20px;font-weight:700">${kurs(preis(s)??k.p,k.cur)}</span></div></div>
    <div class="card" style="margin-top:12px">${kursChart(s)}</div>
    ${c?`<div class="card"><b>Chance jetzt: ${c.dir==="short"?"SHORT ↘":"LONG ↗"} ${Math.round(c.c*100)} %</b><p class="small muted">Wie oft ein Einstieg um diese Uhrzeit früher dein Ziel vor dem Stop erreicht hat.</p><button class="btn ghost voll" data-zsym="${esc(s)}" data-zdir="${c.dir}">Beste Zeiten für ${esc(k.n)} ansehen</button></div>`:""}
    <button class="btn voll" data-was="${esc(s)}">🤔 Long, Short oder Abwarten? Jetzt prüfen</button><button class="btn ghost voll" data-zu>Schließen</button>`)}
@@ -487,12 +489,12 @@ function kaufForm(x){KF=KF&&KF.id===x.id?KF:{id:x.id,f:HB[x.id]??F(),ein:+E.eins
     <ol class="schritte"><li class="s1"><b>jetzt</b><span>kaufen (bis ${uhr(pl.bis)})</span></li><li class="s2"><b>~${uhr(pl.zielT)}</b><span>Ziel erreicht → verkaufen</span></li><li class="s3"><b>${uhr(pl.raus)}</b><span>Richtwert – danach entscheidest du</span></li></ol>
     ${f>=8?`<div class="hinweis">Ab ×${f} kostet schon ein normales Wackeln der Aktie um 1 % gleich ${f} % deines Einsatzes.</div>`:""}</div>
    ${E.ueb?"":`<form id="kf" onsubmit="return false"><p class="small muted">Trag ein, was Trade Republic anzeigt:</p><div class="zwei"><label class="f">Kaufkurs je Stück (€)<input name="kz" type="number" step="any" inputmode="decimal"></label><label class="f">Stück<input name="stk" type="number" step="any" inputmode="decimal"></label></div>
-    <label class="f">Aktienkurs beim Kauf (${CS[x.cur]||x.cur})<input name="basis" type="number" step="any" inputmode="decimal" value="${p.toFixed(2)}"></label></form>`}
+    <label class="f">Aktienkurs beim Kauf (${CS[x.cur]||x.cur})<input name="basis" type="number" step="any" inputmode="decimal" value="${p.toFixed(2)}"></label>${E.modus==="ko"?`<label class="f">Produktname aus Trade Republic (einfügen, optional)<input name="trname" placeholder="z. B. Long 174,4353 $"></label><label class="f">Knock-out-Schwelle (${CS[x.cur]||x.cur}) – die Zahl im Namen, z. B. „Long 174,43“<input name="ko" type="number" step="any" inputmode="decimal" placeholder="${(p*(1-dOf(x)/f)).toFixed(2)}"></label>`:""}</form>`}
    <button class="btn voll gross" data-kauf-ok="${x.id}">${E.ueb?"🧪 Übung kaufen":"Eintragen & überwachen"}</button><button class="btn ghost voll" data-zu>Abbrechen</button>`}
 function kaufStart(x){KF=null;sheet(kaufForm(x))}
-function kaufOk(x){const f=KF.f,ein=KF.ein,b=bewerte(x,xT(x),xS(x),f,ein),pl=plan(x,b),p=preis(x.s)??x.p0;let kaufZ=10,stk=ein/10,basis=p;
-  if(!E.ueb){const fm=$("#kf"),v=n=>+String(fm.elements[n].value).replace(",",".");if(!(v("kz")>0&&v("stk")>0))return toast("Kaufkurs und Stück eintragen");kaufZ=v("kz");stk=v("stk");basis=v("basis")||p}
-  M.pos.push({id:(E.ueb?"u":"e")+Date.now(),pSig:b.pZvS??b.p,setup:x.setup,dir:x.dir||"long",s:x.s,n:x.n,m:x.m,cur:x.cur,f,kaufZ,stk,basis,T:+xT(x),S:+xS(x),t:Date.now(),bis:pl.raus,ueb:!!E.ueb,peak:0,sig:x.id});
+function kaufOk(x){const f=KF.f,ein=KF.ein,b=bewerte(x,xT(x),xS(x),f,ein),pl=plan(x,b),p=preis(x.s)??x.p0;let kaufZ=10,stk=ein/10,basis=p,ko=E.modus==="ko"&&f>1?+(p*(1-dOf(x)/f)).toFixed(3):null;
+  if(!E.ueb){const fm=$("#kf"),v=n=>+String(fm.elements[n].value).replace(",",".");if(!(v("kz")>0&&v("stk")>0))return toast("Kaufkurs und Stück eintragen");kaufZ=v("kz");stk=v("stk");basis=v("basis")||p;if(E.modus==="ko"){ko=v("ko");if(!(ko>0))return toast("Knock-out-Schwelle eintragen");if(dOf(x)*(basis-ko)<=0)return toast("Die Schwelle muss bei Long unter, bei Short über dem Aktienkurs liegen")}}
+  M.pos.push({id:(E.ueb?"u":"e")+Date.now(),pSig:b.pZvS??b.p,setup:x.setup,dir:x.dir||"long",s:x.s,n:x.n,m:x.m,cur:x.cur,f:ko?+(basis/Math.abs(basis-ko)).toFixed(2):f,ko,kaufZ,stk,basis,T:+xT(x),S:+xS(x),t:Date.now(),bis:pl.raus,ueb:!!E.ueb,peak:0,sig:x.id});
   meldung("kauf",`${E.ueb?"🧪 ":""}Gekauft: ${x.n} ${istShort(x)?"SHORT":"LONG"}`,`${f===1?"ohne Hebel":"Hebel ×"+f} · ${nf(ein,0)} € · Richtwert bis ${uhr(pl.raus)}`);
   speichernM();history.back();tab="meine";render();toast(`${E.ueb?"Übung gekauft":"Eingetragen"}: ${x.n}. Ich passe auf.`);benachrichtigungErlauben()}
 
@@ -503,7 +505,7 @@ function glocke(){const n=(M.meld||[]).filter(m=>m.neu).length,g=$("#glocke");g.
 function meldungen(){const l=(M.meld||[]).slice().reverse();sheet(`<h2>🔔 Meldungen</h2>${l.length?l.map((m,i)=>{const a=MART[m.art]||["•","n"];return `<div class="meld ${a[1]} ${m.neu?"neu":""} fade" style="--d:${Math.min(i,8)}"><span class="ic">${a[0]}</span><div><b>${esc(m.titel)}</b><small>${esc(m.text)}</small></div><time>${uhr(m.t)}</time></div>`}).join(""):`<p class="muted">Noch keine Meldungen.</p>`}
   <p class="small muted">Dieselben Meldungen schickt dir der Bot in Telegram, auch wenn die App zu ist. Eilige kommen mit 🚨.</p><button class="btn ghost voll" data-zu>Schließen</button>`);(M.meld||[]).forEach(m=>delete m.neu);try{localStorage.setItem("dt-mein",JSON.stringify(M))}catch(e){}glocke()}
 function einstellungen(){sheet(`<h2>Einstellungen</h2>
-  <div class="seg"><button data-e-modus="faktor" class="${E.modus==="faktor"?"on":""}">Faktor-Zertifikat</button><button data-e-modus="aktie" class="${E.modus==="aktie"?"on":""}">Aktie direkt</button></div>
+  <div class="seg"><button data-e-modus="ko" class="${E.modus==="ko"?"on":""}">Knock-out</button><button data-e-modus="faktor" class="${E.modus==="faktor"?"on":""}">Faktor-Zertifikat</button><button data-e-modus="aktie" class="${E.modus==="aktie"?"on":""}">Aktie direkt</button></div>
   <div class="zwei"><label class="f">Faktor (Hebel)<input data-e="faktor" type="number" step="1" min="1" value="${E.faktor}"></label><label class="f">Einsatz pro Trade (€)<input data-e="einsatz" type="number" step="10" value="${E.einsatz}"></label></div>
   <div class="zwei"><label class="f">Spread Zertifikat (%)<input data-e="spreadZ" type="number" step="0.05" value="${E.spreadZ}"></label><label class="f">Spread Aktie (%)<input data-e="spreadA" type="number" step="0.01" value="${E.spreadA}"></label></div>
   <p class="small muted">Spread = Abstand zwischen Kauf- und Verkaufskurs in Trade Republic, geteilt durch den Kaufkurs. Beispiel: Kaufen 10,04 €, Verkaufen 10,00 € → 0,4 %.</p>
@@ -515,12 +517,27 @@ function einstellungen(){sheet(`<h2>Einstellungen</h2>
   <label class="f">Nur Einstiege zeigen ab Gewinn-Chance (%)<input data-e="minP" type="number" step="1" min="40" max="90" value="${E.minP}"></label>
   <label class="f">Übungskonto Startgeld (€)<input data-e="konto" type="number" step="100" value="${E.konto}"></label>
   <p class="small">Kosten pro Trade jetzt: <b>${pz(kosten(),2).replace("+","")}</b> vom Einsatz. ${F()>1?`Aktie ${pz(E.T,1)} bringt bei Faktor ${F()} brutto ${pz(F()*E.T,1)}.`:""}</p>
-  <details><summary>Verbindung (sonst aus der Haupt-App)</summary>
+  ${verbindungHtml()}<details><summary>Verbindung (sonst aus der Haupt-App)</summary>
    <label class="f">Repository<input data-e="repo" value="${esc(E.repo)}"></label>
    <label class="f">GitHub-Token ${MAIN.ghToken?"(Haupt-App hat einen)":""}<input data-e="ghToken" type="password" value="${esc(E.ghToken)}" placeholder="leer = aus der Haupt-App"></label>
    <label class="f">Sync-Passwort ${MAIN.syncPass?"(Haupt-App hat eins)":""}<input data-e="syncPass" type="password" value="${esc(E.syncPass)}" placeholder="leer = aus der Haupt-App"></label>
    <label class="f">Finnhub-Schlüssel ${MAIN.fhKey?"(Haupt-App hat einen)":""}<input data-e="fhKey" type="password" value="${esc(E.fhKey)}" placeholder="leer = aus der Haupt-App"></label></details>
   <button class="btn ghost voll" data-wecken>Bot jetzt anstupsen</button><button class="btn voll" data-zu>Fertig</button>`)}
+
+/* ---------- Verbindung App ↔ Bot: zeigt, ob alles ankommt ---------- */
+function verbindungHtml(){const j=Date.now(),alt=D&&D.t?Math.round((j-D.t)/6e4):null,pi=D&&D.posInfo,zeile=(ok,t,s)=>`<div class="vz ${ok===true?"ok":ok===false?"nein":"warte"}"><span>${ok===true?"✅":ok===false?"❌":"⏳"}</span><div><b>${t}</b><small>${s}</small></div></div>`;
+  return `<div class="card verb"><b>🔗 Verbindung App ↔ Bot</b>
+   ${zeile(DEMO?false:alt!=null&&alt<20,"Daten vom Bot",DEMO?"Noch keine – Bot ist noch nicht gelaufen (oder Repository falsch)":`zuletzt vor ${alt} Min. · läuft auf: ${esc(D.wer||"?")}${alt>=20?" · außerhalb der Börsenzeit normal":""}`)}
+   ${zeile(tok()?null:false,"GitHub-Token",tok()?(E.ghToken?"eigener Token in der App":"aus dem Aktien Helfer")+" – mit „Testen“ prüfen":"fehlt – unten bei „Verbindung“ eintragen")}
+   ${zeile(pass()?true:false,"Sync-Passwort",pass()?"vorhanden (muss gleich sein wie das Secret SYNC_PASSWORD)":"fehlt – unten eintragen")}
+   ${zeile(SYNC?SYNC.ok:null,"Trades an den Bot senden",SYNC?(SYNC.ok?`geschickt um ${uhr(SYNC.t)}`:`Fehler: ${esc(SYNC.txt)}`):"noch nichts gesendet")}
+   ${zeile(pi?pi.ok:null,"Bot liest deine Trades",pi?(pi.ok?`${pi.leer?"noch keine Trades-Datei":pi.n+" Trades gelesen"} um ${uhr(pi.t)}`:esc(pi.fehler)):"noch keine Rückmeldung")}
+   <button class="btn ghost voll" data-vtest>Verbindung testen</button><div id="vtest" class="small"></div></div>`}
+async function verbindungTesten(){const o=$("#vtest");o.textContent="Prüfe …";const r=[];
+  try{const x=await fetch(`https://api.github.com/repos/${E.repo}`,{headers:tok()?{Authorization:`Bearer ${tok()}`}:{}});if(!x.ok)r.push(`❌ Repository ${esc(E.repo)} nicht gefunden (${x.status})`);else{const j=await x.json();r.push(j.permissions&&j.permissions.push?"✅ Token darf ins Repository schreiben":"❌ Token darf NICHT schreiben – eigenen Token mit Zugriff auf Day-dr72818 eintragen (Contents + Actions: Read and write)")}}catch(e){r.push("❌ Keine Verbindung zu GitHub")}
+  if(pass()&&tok()){await hochladen();r.push(SYNC&&SYNC.ok?"✅ Test-Upload der Trades geklappt – der Bot liest sie innerhalb von 30 s":"❌ Upload fehlgeschlagen: "+esc(SYNC&&SYNC.txt))}
+  try{const d=await hole("day.json");r.push(d&&d.t?`✅ Bot-Daten gefunden (vom ${new Date(d.t).toLocaleString("de-DE")})`:"❌ Keine Bot-Daten")}catch(e){r.push("❌ Bot-Daten nicht abrufbar – ist der Bot schon gelaufen?")}
+  o.innerHTML=r.map(x=>`<div style="margin-top:4px">${x}</div>`).join("")}
 
 /* ---------- Synchronisieren (verschlüsselt, gleiches Verfahren wie die Haupt-App) ---------- */
 const te=new TextEncoder(),td=new TextDecoder(),b64=u=>btoa(String.fromCharCode(...u)),unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
@@ -529,7 +546,7 @@ async function encJ(o,p){const sa=crypto.getRandomValues(new Uint8Array(16)),iv=
 async function decJ(t,p){const o=typeof t==="string"?JSON.parse(t):t;return JSON.parse(td.decode(await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(o.i)},await cKey(p,unb64(o.s)),unb64(o.c))))}
 async function gh(path,opt){const r=await fetch(`https://api.github.com/repos/${E.repo}/contents/${path}${opt?"":"?ref=main"}`,Object.assign({headers:{Authorization:`Bearer ${tok()}`,Accept:"application/vnd.github+json"}},opt||{}));if(r.status===404)return null;if(!r.ok)throw new Error("GitHub "+r.status);return r.json()}
 async function hochladen(){if(DEMO||!tok()||!pass())return;try{const cur=await gh("data/pos.enc"),einst={modus:E.modus,faktor:E.faktor,spreadZ:E.spreadZ,spreadA:E.spreadA,gebuehr:E.gebuehr,einsatz:E.einsatz,steuer:E.steuer,T:E.T,S:E.S,minP:E.minP};
-    await gh("data/pos.enc",{method:"PUT",body:JSON.stringify({message:"App: Positionen",content:btoa(await encJ({pos:M.pos,einst,updatedAt:M.updatedAt},pass())),sha:cur?cur.sha:undefined,branch:"main"})})}catch(e){toast("Abgleich nicht möglich: "+e.message)}}
+    await gh("data/pos.enc",{method:"PUT",body:JSON.stringify({message:"App: Positionen",content:btoa(await encJ({pos:M.pos,einst,updatedAt:M.updatedAt},pass())),sha:cur?cur.sha:undefined,branch:"main"})});SYNC={t:Date.now(),ok:true}}catch(e){SYNC={t:Date.now(),ok:false,txt:e.message};toast("Abgleich mit dem Bot nicht möglich: "+e.message)}}
 async function wecken(){if(!tok())return toast("Dafür braucht es einen GitHub-Token.");try{const r=await fetch(`https://api.github.com/repos/${E.repo}/actions/workflows/wache.yml/dispatches`,{method:"POST",headers:{Authorization:`Bearer ${tok()}`,Accept:"application/vnd.github+json"},body:JSON.stringify({ref:"main"})});toast(r.status===204?"Bot angestupst. Läuft in 1–2 Minuten.":"Geht nicht (GitHub "+r.status+")")}catch(e){toast("Keine Verbindung")}}
 
 /* ---------- Alarm in der App (wenn sie offen ist) ---------- */
@@ -549,7 +566,7 @@ let letzterTab="";
 function render(neu){if(!D)return;$("#modus").textContent=E.ueb?"🧪 Übung":"💶 Echt";$("#modus").className="modus "+(E.ueb?"ueb":"echt");
   $("#demo").innerHTML=DEMO?`<div class="demo">✨ <b>Vorschau mit Beispieldaten.</b> Übungskurse spielen ähnliche Fälle nach (so oft, wie sie früher ausgingen), im Zeitraffer ×10. Echte Kurse kommen mit dem Bot.</div>`:"";
   $("#status").textContent=DEMO?"Beispieldaten":`Stand ${uhr(D.t)} · ${(D.signale||[]).filter(x=>x.bis>Date.now()).length} aktive Einstiege`;
-  $("#live").innerHTML=["us","de"].map(m=>{const k=D.markt&&D.markt[m]||{};return `<span class="chip"><span class="dot ${k.offen?"on":"off"}"></span>${m==="us"?"🇺🇸 USA":"🇩🇪 DAX"} ${k.offen?`bis ${uhr(k.zu)}`:"zu"}${k.trend?` ${k.trend==="auf"?"↗":k.trend==="ab"?"↘":"→"}`:""}</span>`}).join("");
+  $("#live").innerHTML=["us","de"].map(m=>{const k=D.markt&&D.markt[m]||{};return `<span class="chip"><span class="dot ${k.offen?"on":"off"}"></span>${m==="us"?"🇺🇸 USA":"🇪🇺 Europa"} ${k.offen?`bis ${uhr(k.zu)}`:"zu"}${k.trend?` ${k.trend==="auf"?"↗":k.trend==="ab"?"↘":"→"}`:""}</span>`}).join("");
   $$(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===tab));$(".tabs .in").style.setProperty("--i",["jetzt","zeiten","meine","archiv","bilanz"].indexOf(tab));
   const nRaus=M.pos.filter(x=>["raus","gut"].includes(TUN[stand(x).st][0])).length,tb=$('.tabs [data-tab="meine"]');tb.querySelector(".bdg")?.remove();if(nRaus)tb.insertAdjacentHTML("beforeend",`<span class="bdg">${nRaus}</span>`);
   RUHIG=!neu&&letzterTab===tab;letzterTab=tab;const v=$("#view");v.classList.toggle("ruhig",RUHIG);
@@ -567,7 +584,7 @@ function tick(){if(!D)return;tickN++;const jetzt=Date.now();
   if(tickN%3===0)for(const x of M.pos){const h=HIST[x.id]=HIST[x.id]||[];h.push(+stand(x).net.toFixed(2));if(h.length>240)h.shift()}
   if(tab==="meine"&&!$("#sheet").classList.contains("open"))render();
   $$("[data-px]").forEach(e=>{const s=e.dataset.px,x=(D.signale||[]).find(y=>y.s===s),p=preis(s);if(p&&x){const t=kurs(p,x.cur);if(e.textContent!==t){const up=parseFloat(e.textContent.replace(/\./g,"").replace(",","."))<p;e.textContent=t;e.classList.remove("tick-up","tick-down");void e.offsetWidth;e.classList.add(up?"tick-up":"tick-down")}}});alarmPruefen()}
-document.addEventListener("click",e=>{const t=e.target.closest("[data-tab],[data-open],[data-kauf],[data-kauf-ok],[data-vk],[data-vk-ok],[data-del],[data-zu],[data-zm],[data-zsym],[data-kombi],[data-e-modus],[data-wecken],[data-hb],[data-kh],[data-zr],[data-zrc],[data-zrk],[data-zrneu],[data-zrwahl],[data-armehr],[data-ar],[data-pf],[data-af],[data-arsig],[data-dipwarte],[data-ed],[data-was],[data-wj],[data-kr],[data-ksheet],[data-rich],[data-zd],#einst,#einst2,#modus,#glocke,#sheet-bg,#alarmband");if(!t)return;
+document.addEventListener("click",e=>{const t=e.target.closest("[data-tab],[data-open],[data-kauf],[data-kauf-ok],[data-vk],[data-vk-ok],[data-del],[data-zu],[data-zm],[data-zsym],[data-kombi],[data-e-modus],[data-wecken],[data-hb],[data-kh],[data-vtest],[data-zr],[data-zrc],[data-zrk],[data-zrneu],[data-zrwahl],[data-armehr],[data-ar],[data-pf],[data-af],[data-arsig],[data-dipwarte],[data-ed],[data-was],[data-wj],[data-kr],[data-ksheet],[data-rich],[data-zd],#einst,#einst2,#modus,#glocke,#sheet-bg,#alarmband");if(!t)return;
   if(t.dataset.tab){tab=t.dataset.tab;render(true);scrollTo({top:0,behavior:"smooth"})}
   else if(t.dataset.open)detail(t.dataset.open);
   else if(t.dataset.hb){const [id,h]=t.dataset.hb.split(":");HB[id]=+h;const x=D.signale.find(y=>y.id===id),card=t.closest(".sig");RUHIG=true;const voll=!card.querySelector("[data-kauf]")||card.closest(".sheet");card.outerHTML=signalKarte(x,0,!!card.closest(".sheet"));RUHIG=false;$$(`[data-sig="${id}"] .erg b`).forEach(b=>{b.classList.remove("pop");void b.offsetWidth;b.classList.add("pop")})}
@@ -592,6 +609,7 @@ document.addEventListener("click",e=>{const t=e.target.closest("[data-tab],[data
   else if(t.hasAttribute("data-zrneu")){clearInterval(zeitreiseTakt.t);ZR=null;zeitreiseWahl()}
   else if(t.dataset.zrc&&ZR){const c=t.dataset.zrc;if(c==="lauf"){ZR.lauf=!ZR.lauf;ZR.letzt=Date.now()}else if(c==="auto")ZR.auto=!ZR.auto;else if(c==="vk")zrVerkauf();else if(c[0]==="t")ZR.tempo=+c.slice(1);const y=$("#sheet").scrollTop;sheetInhalt(zeitreiseHtml());$("#sheet").scrollTop=y}
   else if(t.dataset.zrk&&ZR){const [dir,si]=t.dataset.zrk.split(":");zrKauf(dir,si!=null?+si:null);const y=$("#sheet").scrollTop;sheetInhalt(zeitreiseHtml());$("#sheet").scrollTop=y}
+  else if(t.hasAttribute("data-vtest"))verbindungTesten();
   else if(t.dataset.ksheet)kursSheet(t.dataset.ksheet);
   else if(t.dataset.was){if($("#sheet").classList.contains("open"))sheetInhalt(wasJetztHtml(t.dataset.was)+`<button class="btn ghost voll" data-zu>Schließen</button>`);else wasJetzt(t.dataset.was)}
   else if(t.dataset.wj){const [sy,dir,T,S]=t.dataset.wj.split(":");if($("#sheet").classList.contains("open")){history.back();setTimeout(()=>wjKauf(sy,dir,+T,+S),320)}else wjKauf(sy,dir,+T,+S)}
@@ -607,7 +625,7 @@ document.addEventListener("click",e=>{const t=e.target.closest("[data-tab],[data
   else if(t.id==="modus"){E.ueb=!E.ueb;speichernE();render(true);toast(E.ueb?"🧪 Übungsmodus: kein echtes Geld":"💶 Echt-Modus: du trägst echte Käufe ein")}
   else if(t.id==="alarmband"){t.classList.remove("on");tab=t.dataset.ziel||"meine";delete t.dataset.ziel;render(true);scrollTo({top:0,behavior:"smooth"})}
   else if(t.hasAttribute("data-zu")||t.id==="sheet-bg")history.back()});
-document.addEventListener("input",e=>{if(e.target.id==="kf-ein"&&KF){const v=+String(e.target.value).replace(",",".");if(v>0){KF.ein=v;const x=D.signale.find(y=>y.id===KF.id),y=$("#sheet").scrollTop,pos=e.target.selectionStart;sheetInhalt(kaufForm(x));$("#sheet").scrollTop=y;const n=$("#kf-ein");n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}}});
+document.addEventListener("input",e=>{if(e.target.name==="trname"){const m=e.target.value.match(/(long|short)\s*([\d.,]+)/i);if(m){const z=+m[2].replace(/\.(?=\d{3}(\D|$))/g,"").replace(",",".");const f=e.target.form;if(z>0&&f&&f.elements.ko){f.elements.ko.value=z;toast(`Knock-out-Schwelle ${nf(z,2)} übernommen (${m[1]})`)}}return}if(e.target.id==="kf-ein"&&KF){const v=+String(e.target.value).replace(",",".");if(v>0){KF.ein=v;const x=D.signale.find(y=>y.id===KF.id),y=$("#sheet").scrollTop,pos=e.target.selectionStart;sheetInhalt(kaufForm(x));$("#sheet").scrollTop=y;const n=$("#kf-ein");n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}}});
 document.addEventListener("change",e=>{const t=e.target;if(t.id==="zsym"){zSym=t.value;render(true);return}if(t.id==="arsig"){arSig=t.value;render(true);return}const k=t.dataset&&t.dataset.e;if(!k)return;
   E[k]=["repo","ghToken","syncPass","fhKey","richtung"].includes(k)?t.value.trim():+String(t.value).replace(",",".");speichernE();if(["T","S","minP","faktor","einsatz","modus"].includes(k))speichernM();render(true);toast("Gespeichert")});
 window.addEventListener("popstate",()=>{if($("#sheet").classList.contains("open"))zu()});

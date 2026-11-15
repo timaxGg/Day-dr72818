@@ -311,3 +311,9 @@ body{background:radial-gradient(900px 500px at 85% -10%,color-mix(in srgb,var(--
 .zrw{padding:8px 0;border-bottom:1px solid var(--line)}.zrw b{display:block;margin-bottom:6px}
 .zrctl{display:flex;gap:6px;margin:4px 0 10px;flex-wrap:wrap}.zrctl .btn{flex:1;padding:9px 6px;font-size:13px}.zrctl .btn.on{outline:2px solid var(--accent)}
 .zrbtn{margin:8px 0 0}
+
+.koinfo{margin:8px 0 0;padding:8px 11px;border-radius:10px;background:var(--surface2);font-size:12.5px}
+.koinfo.nah{background:var(--down);color:#fff;animation:glowr 1.2s infinite}
+
+.verb{margin-top:12px}.vz{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--line)}.vz:last-of-type{border-bottom:0}
+.vz b{display:block;font-size:13.5px}.vz small{color:var(--muted);font-size:12px}

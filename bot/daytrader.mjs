@@ -27,15 +27,24 @@ const uhr=t=>new Date(t).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-di
 const US=[["AAPL","Apple"],["MSFT","Microsoft"],["NVDA","Nvidia"],["AMZN","Amazon"],["GOOGL","Alphabet"],["META","Meta"],["TSLA","Tesla"],["AVGO","Broadcom"],["AMD","AMD"],["NFLX","Netflix"],
  ["JPM","JPMorgan"],["V","Visa"],["MA","Mastercard"],["XOM","Exxon Mobil"],["LLY","Eli Lilly"],["UNH","UnitedHealth"],["COST","Costco"],["WMT","Walmart"],["ORCL","Oracle"],["CRM","Salesforce"],
  ["ADBE","Adobe"],["INTC","Intel"],["QCOM","Qualcomm"],["MU","Micron"],["AMAT","Applied Materials"],["PLTR","Palantir"],["UBER","Uber"],["COIN","Coinbase"],["MSTR","Strategy"],["BA","Boeing"],
- ["GS","Goldman Sachs"],["BAC","Bank of America"],["DIS","Disney"],["PYPL","PayPal"],["SMCI","Super Micro"],["ARM","Arm"],["PANW","Palo Alto"],["CRWD","CrowdStrike"],["SHOP","Shopify"],["QQQ","Nasdaq 100 ETF"]];
+ ["GS","Goldman Sachs"],["BAC","Bank of America"],["DIS","Disney"],["PYPL","PayPal"],["SMCI","Super Micro"],["ARM","Arm"],["PANW","Palo Alto"],["CRWD","CrowdStrike"],["SHOP","Shopify"],["QQQ","Nasdaq 100 ETF"],
+ ["TTWO","Take-Two"],["ASML","ASML"],["NBIS","Nebius"],["TSM","TSMC"],["MRVL","Marvell"],["LRCX","Lam Research"],["KLAC","KLA"],["TXN","Texas Instruments"],["ANET","Arista"],["CSCO","Cisco"],
+ ["IBM","IBM"],["NOW","ServiceNow"],["INTU","Intuit"],["DELL","Dell"],["APP","AppLovin"],["HOOD","Robinhood"],["SOFI","SoFi"],["RKLB","Rocket Lab"],["IONQ","IonQ"],["RIVN","Rivian"],
+ ["ABNB","Airbnb"],["DDOG","Datadog"],["NET","Cloudflare"],["ZS","Zscaler"],["TTD","Trade Desk"],["SPOT","Spotify"],["RDDT","Reddit"],["SNOW","Snowflake"],["MARA","MARA Holdings"],["RIOT","Riot Platforms"],
+ ["BABA","Alibaba"],["NKE","Nike"],["SBUX","Starbucks"],["MCD","McDonald's"],["KO","Coca-Cola"],["PEP","PepsiCo"],["PFE","Pfizer"],["CVX","Chevron"],["F","Ford"],["GM","General Motors"]];
 const DE=[["SAP.DE","SAP"],["SIE.DE","Siemens"],["ALV.DE","Allianz"],["DTE.DE","Deutsche Telekom"],["AIR.DE","Airbus"],["RHM.DE","Rheinmetall"],["MUV2.DE","Münchener Rück"],["IFX.DE","Infineon"],
  ["BMW.DE","BMW"],["MBG.DE","Mercedes-Benz"],["VOW3.DE","Volkswagen"],["BAS.DE","BASF"],["BAYN.DE","Bayer"],["DBK.DE","Deutsche Bank"],["CBK.DE","Commerzbank"],["ADS.DE","Adidas"],["DHL.DE","DHL Group"],
  ["ENR.DE","Siemens Energy"],["MTX.DE","MTU Aero"],["DB1.DE","Deutsche Börse"],["HNR1.DE","Hannover Rück"],["CON.DE","Continental"],["HEI.DE","Heidelberg Materials"],["BEI.DE","Beiersdorf"],
  ["FRE.DE","Fresenius"],["MRK.DE","Merck KGaA"],["SY1.DE","Symrise"],["ZAL.DE","Zalando"],["SHL.DE","Siemens Healthineers"],["P911.DE","Porsche AG"],["EOAN.DE","E.ON"],["RWE.DE","RWE"],
- ["VNA.DE","Vonovia"],["HEN3.DE","Henkel"],["QIA.DE","Qiagen"],["DTG.DE","Daimler Truck"],["BNR.DE","Brenntag"],["G1A.DE","GEA"],["PAH3.DE","Porsche SE"],["SRT3.DE","Sartorius"]];
+ ["VNA.DE","Vonovia"],["HEN3.DE","Henkel"],["QIA.DE","Qiagen"],["DTG.DE","Daimler Truck"],["BNR.DE","Brenntag"],["G1A.DE","GEA"],["PAH3.DE","Porsche SE"],["SRT3.DE","Sartorius"],
+ ["ASML.AS","ASML (Amsterdam)"],["ADYEN.AS","Adyen"],["INGA.AS","ING"],["PHIA.AS","Philips"],["SHELL.AS","Shell"],["PRX.AS","Prosus"],
+ ["MC.PA","LVMH"],["OR.PA","L'Oréal"],["RMS.PA","Hermès"],["TTE.PA","TotalEnergies"],["SAN.PA","Sanofi"],["SU.PA","Schneider Electric"],["BNP.PA","BNP Paribas"],["SAF.PA","Safran"],["AI.PA","Air Liquide"],
+ ["RACE.MI","Ferrari"],["UCG.MI","UniCredit"],["ISP.MI","Intesa Sanpaolo"],["ENEL.MI","Enel"],["STLAM.MI","Stellantis"],
+ ["SAN.MC","Santander"],["ITX.MC","Inditex"],["IBE.MC","Iberdrola"],["BBVA.MC","BBVA"],
+ ["NESN.SW","Nestlé"],["NOVN.SW","Novartis"],["UBSG.SW","UBS"],["NOVO-B.CO","Novo Nordisk"],["NOKIA.HE","Nokia"],["ERIC-B.ST","Ericsson"]];
 const MARKT={us:{tz:"America/New_York",auf:570,zu:960,ref:"SPY",liste:US,cur:"USD"},de:{tz:"Europe/Berlin",auf:540,zu:1050,ref:"^GDAXI",liste:DE,cur:"EUR"}};
-const NAME=Object.fromEntries([...US,...DE]),MVON=s=>/\.DE$/.test(s)?"de":"us";
-const REPLAY=["NVDA","TSLA","AMD","AAPL","META","MSFT","AMZN","PLTR","COIN","MSTR","SMCI","NFLX","AVGO","GOOGL","QQQ","SAP.DE","RHM.DE","SIE.DE","IFX.DE","ALV.DE","DBK.DE","ENR.DE","AIR.DE","MBG.DE","BMW.DE","DTE.DE","ZAL.DE","CBK.DE","BAYN.DE","ADS.DE"];
+const NAME=Object.fromEntries([...US,...DE]),MVON=s=>/\.[A-Z]{1,3}$/.test(s)?"de":"us"; // „de“ = alle europäischen Börsen (9:00–17:30 Uhr)
+const REPLAY=["ASML","ASML.AS","TTWO","NBIS","NVDA","TSLA","AMD","AAPL","META","MSFT","AMZN","PLTR","COIN","MSTR","SMCI","NFLX","AVGO","GOOGL","QQQ","SAP.DE","RHM.DE","SIE.DE","IFX.DE","ALV.DE","DBK.DE","ENR.DE","AIR.DE","MBG.DE","BMW.DE","DTE.DE","ZAL.DE","CBK.DE","BAYN.DE","ADS.DE"];
 
 /* ---------- Zeit ---------- */
 function zeit(tz,d=new Date()){const p=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",weekday:"short",hourCycle:"h23"}).formatToParts(d),g=k=>(p.find(x=>x.type===k)||{}).value;
@@ -59,7 +68,7 @@ async function parallel(liste,n,f){let i=0;await Promise.all(Array.from({length:
 /* ---------- Zustand ---------- */
 let S=Object.assign({offset:0,stat:{},statSym:{},dip:{},statTag:"",gesendet:{},posSt:{},bilanz:[],log:[],faelleLive:[],fehler:{},ausfall:[],letzt:0,news:{},zahlen:{d:"",s:[]},sigTag:{}},readJSON(SF,{}));
 let D={t:0,wer:WER,markt:{},kurse:{},signale:[],setups:{},bilanz:[],fehler:{}},V={},Z=null,FAELLE=[],TAGE={},LIVE={},POS={pos:[],einst:{}},EINST=null,geaendert=true;
-const STD={modus:"faktor",faktor:10,spreadZ:.4,spreadA:.1,gebuehr:1,einsatz:500,steuer:26.375,T:1,S:1,minP:50,minT:2};EINST=Object.assign({},STD);
+const STD={modus:"ko",faktor:10,spreadZ:.4,spreadA:.1,gebuehr:1,einsatz:500,steuer:26.375,T:1,S:1,minP:50,minT:2};EINST=Object.assign({},STD);
 function fehler(art,txt){S.fehler[art]={t:Date.now(),txt:String(txt).slice(0,160)};log("Fehler",art,txt)}
 function protokoll(typ,s,text,daten){S.log.push({t:Date.now(),typ,s,text,daten:daten||{}});if(S.log.length>1500)S.log=S.log.slice(-1200);geaendert=true}
 const sichern=()=>writeJSON(SF,S);
@@ -131,7 +140,7 @@ async function quartalszahlen(){const heute=zeit("America/New_York").date;if(S.z
   const j=await finnhub(`calendar/earnings?from=${heute}&to=${bis}`);S.zahlen={d:heute,s:((j&&j.earningsCalendar)||[]).map(e=>e.symbol)}}catch(e){fehler("zahlen",e.message)}}
 
 /* ---------- Live: Kurse, Signale ---------- */
-const hebel=()=>EINST.modus==="faktor"?+EINST.faktor:1;
+const hebel=()=>EINST.modus==="aktie"?1:+EINST.faktor;
 async function scan(m){const M=MARKT[m],jetzt=Date.now(),z=zeit(M.tz);let R=null;
   try{const r=await yahoo(M.ref,"5d");R=K.prep(r.B,M.tz)}catch(e){fehler("index",e.message)}const MK=K.marktKarte(R);
   const mk=R?MK.get(R.B.t[R.n-1]):0;D.markt[m]={offen:offen(m),auf:jetzt-(z.min-M.auf)*6e4,zu:schlussMs(m),trend:mk>0?"auf":mk<0?"ab":"seit"};
@@ -165,13 +174,13 @@ async function neuesSignal(x){x.news=await nachrichten(x.s);if(x.news.g==="negat
     `⌛ Ziel meist nach ~${b.min} Min. · Richtwert bis ${uhr(x.t+richt*6e4)}\n📊 Hebel ×${hebel()} · Ø ${eu(b.eEv)} nach Kosten · ${sich}\n🎯 Ziel zuerst ${Math.round(b.p*100)} % · Stop zuerst ${Math.round(b.pl*100)} % · Rest: Richtzeit\n📰 Nachrichten: ${x.news.g}`,{knopf:["In der App öffnen",APP+"#jetzt"]})}
 
 /* ---------- Offene Trades überwachen ---------- */
-const TUN={halten:["⏳","HALTEN"],ziel:["🎯","JETZT VERKAUFEN – Ziel erreicht"],stop:["🛑","SOFORT VERKAUFEN – Stop erreicht"],dreht:["⚠️","VERKAUFEN – lieber jetzt sichern"],
+const TUN={ko:["💥","KNOCK-OUT – Zertifikat ist wertlos"],konah:["🚨","SOFORT VERKAUFEN – Knock-out ist nah"],halten:["⏳","HALTEN"],ziel:["🎯","JETZT VERKAUFEN – Ziel erreicht"],stop:["🛑","SOFORT VERKAUFEN – Stop erreicht"],dreht:["⚠️","VERKAUFEN – lieber jetzt sichern"],
   schmilzt:["⚠️","VERKAUFEN – Gewinn schmilzt"],sinkt:["📉","ACHTUNG – Gewinn geht zurück"],zeit:["⌛","RICHTZEIT erreicht – du entscheidest"],schluss:["🔔","ACHTUNG – Börse schließt bald"]};
-const EILIG=new Set(["ziel","stop","dreht","schmilzt"]);
-async function positionenLesen(){if(!PASS){EINST=Object.assign({},STD,EINST);return}let txt=null;
+const EILIG=new Set(["ziel","stop","dreht","schmilzt","konah","ko"]);
+async function positionenLesen(){if(!PASS){EINST=Object.assign({},STD,EINST);D.posInfo={t:Date.now(),ok:false,fehler:"SYNC_PASSWORD fehlt beim Bot"};return}let txt=null;
   try{if(WER==="test"&&fs.existsSync(P("data/pos.enc")))txt=fs.readFileSync(P("data/pos.enc"),"utf8");else{execSync("git fetch -q --depth=1 origin main",{cwd:ROOT,stdio:"ignore",timeout:20000});txt=execSync("git show origin/main:data/pos.enc",{cwd:ROOT,stdio:["ignore","pipe","ignore"]}).toString()}}catch(e){txt=null}
-  if(!txt){EINST=Object.assign({},STD,EINST);return}
-  try{const o=await entschluesseln(txt,PASS);POS={pos:Array.isArray(o.pos)?o.pos:[],einst:o.einst||{}};EINST=Object.assign({},STD,POS.einst);delete S.fehler.sync}catch(e){fehler("sync","pos.enc nicht lesbar – stimmt SYNC_PASSWORD?")}}
+  if(!txt){EINST=Object.assign({},STD,EINST);D.posInfo={t:Date.now(),n:0,ok:true,leer:true};return}
+  try{const o=await entschluesseln(txt,PASS);POS={pos:Array.isArray(o.pos)?o.pos:[],einst:o.einst||{}};EINST=Object.assign({},STD,POS.einst);delete S.fehler.sync;D.posInfo={t:Date.now(),n:POS.pos.length,von:o.updatedAt||0,ok:true}}catch(e){fehler("sync","pos.enc nicht lesbar – stimmt SYNC_PASSWORD?");D.posInfo={t:Date.now(),ok:false,fehler:"Sync-Passwort passt nicht"}}}
 async function kursJetzt(s){const jetzt=Date.now();if(LIVE[s]&&jetzt-LIVE[s].t<15e3)return LIVE[s].p;
   try{if(MVON(s)==="us"&&FH){const q=await finnhub(`quote?symbol=${encodeURIComponent(s)}`);if(q&&q.c>0){LIVE[s]={p:q.c,t:jetzt};return q.c}}
     const r=await yahoo(s,"1d","1m");if(r.p>0){LIVE[s]={p:r.p,t:jetzt};return r.p}}catch(e){fehler("kurs",`${s}: ${e.message}`)}return null}
@@ -181,7 +190,7 @@ async function ueberwachen(){const jetzt=Date.now(),aus={};for(const x of POS.po
     S.posSt[x.id]={...s,st:s.st,kursT:jetzt,gemeldet:alt.gemeldet,peak:s.peak,peakU:s.peakU};aus[x.id]={p,u:+s.u.toFixed(3),net:+s.net.toFixed(2),st:s.st,peak:+s.peak.toFixed(3),peakU:+s.peakU.toFixed(3),pZ:+s.pZ.toFixed(2),pS:+s.pS.toFixed(2),quelle:s.quelle,t:jetzt};
     if(s.st!=="halten"&&alt.gemeldet!==s.st){S.posSt[x.id].gemeldet=s.st;const t=TUN[s.st],eilig=EILIG.has(s.st);
       protokoll(s.st,x.s,`${t[1]}: ${x.n}${x.ueb?" (Übung)":""}`,{Netto:eu(s.jetztE),"Weiter halten Ø":eu(s.evHalt),"Chance Ziel":Math.round(s.pZ*100)+" %",Grundlage:s.quelle});
-      await senden(`${eilig?"🚨🚨 ":""}${t[0]} <b>${t[1]}</b>\n<b>${esc(x.n)}</b> ${x.dir==="short"?"SHORT":"LONG"}${x.ueb?" 🧪 Übung":""}\n\nJetzt verkaufen: <b>${eu(s.jetztE)}</b>\nWeiter halten: Ø ${eu(s.evHalt)} (Ziel ${Math.round(s.pZ*100)} % · Stop ${Math.round(s.pS*100)} %)\nAktie ${pz((x.dir==="short"?-1:1)*s.u,2)} seit Kauf · Grundlage: ${s.quelle}`,{knopf:["Trade in der App",APP+"#meine"]})}
+      await senden(`${eilig?"🚨🚨 ":""}${t[0]} <b>${t[1]}</b>\n<b>${esc(x.n)}</b> ${x.dir==="short"?"SHORT":"LONG"}${x.ueb?" 🧪 Übung":""}\n\nJetzt verkaufen: <b>${eu(s.jetztE)}</b>\nWeiter halten: Ø ${eu(s.evHalt)} (Ziel ${Math.round(s.pZ*100)} % · Stop ${Math.round(s.pS*100)} %)\nAktie ${pz((x.dir==="short"?-1:1)*s.u,2)} seit Kauf · Grundlage: ${s.quelle}${s.ko?`\nKnock-out bei ${nf(s.ko)} · noch ${pz(s.koAbst,2)} Abstand · Hebel jetzt ×${nf(s.hebelJetzt,1)}`:""}`,{knopf:["Trade in der App",APP+"#meine"]})}
     else if(s.st==="halten"&&alt.gemeldet&&alt.gemeldet!=="halten")S.posSt[x.id].gemeldet="halten"}
   for(const id of Object.keys(S.posSt))if(!POS.pos.some(x=>x.id===id))delete S.posSt[id];
   if(PASS&&Object.keys(aus).length){D.pe=await verschluesseln(aus,PASS);geaendert=true}}

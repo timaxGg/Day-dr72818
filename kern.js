@@ -131,8 +131,10 @@ function haltenAus(faelle,d,T,S,u,peakU,minSeit){if(!faelle||!faelle.length)retu
 
 /* ---------- Offener Trade: Stand und Empfehlung (Halten / Achtung / Verkaufen) ---------- */
 // x: {dir, f, kaufZ, stk, basis, T, S, t, bis, pSig, peak, peakU}; p: aktueller Aktienkurs; zu: Börsenschluss (ms); jetzt: ms
-function stand(E,x,p,zu,jetzt,faelle){const d=x.dir==="short"?-1:1,u=d*(p/x.basis-1)*100,f=x.f||1,sp=spreadF(E,f);
-  const wert=x.kaufZ*Math.max(0,1+f*u/100),verk=wert*(1-sp/100),einsatz=x.stk*x.kaufZ,net=x.stk*verk-einsatz-2*E.gebuehr,netP=net/einsatz*100;
+// Knock-out (x.ko = Schwelle): Wert = Abstand Aktie–Schwelle, Hebel beim Kauf = Kurs ÷ Abstand. Erreicht die Aktie die Schwelle, ist das Zertifikat wertlos.
+function stand(E,x,p,zu,jetzt,faelle){const d=x.dir==="short"?-1:1,u=d*(p/x.basis-1)*100,ko=x.ko>0?+x.ko:null,f=ko?x.basis/Math.max(1e-9,Math.abs(x.basis-ko)):(x.f||1),sp=spreadF(E,f);
+  const koAbst=ko?d*(p-ko)/p*100:null,hebelJetzt=ko?(koAbst>0?100/koAbst:Infinity):f;
+  const wert=ko?x.kaufZ*Math.max(0,d*(p-ko)/Math.abs(x.basis-ko)):x.kaufZ*Math.max(0,1+f*u/100),verk=wert*(1-sp/100),einsatz=x.stk*x.kaufZ,net=x.stk*verk-einsatz-2*E.gebuehr,netP=net/einsatz*100;
   const peak=Math.max(x.peak||0,netP),peakU=Math.max(x.peakU??0,u),k=sp+2*E.gebuehr/einsatz*100,start=Math.max(.5,(f*x.T-k)*.5),linie=peak>=start?Math.max(.2,peak*.5):null,eur=v=>einsatz*v/100;
   const zielE=eur(f*x.T-k),stopE=eur(-f*x.S-k),beU=(((1+2*E.gebuehr/einsatz)/(1-sp/100)-1)/f)*100;
   // Chance aufs Ziel / Risiko Stop ab jetzt. Ausgangswert: Trefferquote des Signals. Fortschritt erhöht, Rückgang vom Hoch und verstrichene Zeit senken sie.
@@ -141,11 +143,11 @@ function stand(E,x,p,zu,jetzt,faelle){const d=x.dir==="short"?-1:1,u=d*(p/x.basi
   const seit=(jetzt-x.t)/6e4,aus=(x.setup&&faelle?haltenAus(faelle.filter(f=>f.k===x.setup),d,x.T,x.S,u,peakU,seit):null)||haltenAus(faelle,d,x.T,x.S,u,peakU,seit);if(aus){pZ=aus.pZ;pS=aus.pS}
   const jetztE=nachSt(E,net),evHalt=pZ*nachSt(E,zielE)+pS*stopE+(1-pZ-pS)*jetztE,marge=Math.max(.5,einsatz*.002),gedreht=peakU>=x.T*.4&&dd>=.25;
   let st="halten";
-  if(u>=x.T)st="ziel";else if(u<=-x.S)st="stop";
+  if(ko&&koAbst<=0)st="ko";else if(u>=x.T)st="ziel";else if(ko&&koAbst<1.5)st="konah";else if(u<=-x.S)st="stop";
   else if((net>0||gedreht&&net>-2*marge)&&evHalt<jetztE+marge)st="dreht";
   else if(linie!=null&&netP<=linie)st="schmilzt";else if(zu&&jetzt>zu-20*6e4)st="schluss";else if(x.bis&&jetzt>=x.bis)st="zeit";
   else if((linie!=null&&netP<peak*.8)||evHalt<jetztE+2*marge&&net>0)st="sinkt";
-  return {quelle:aus?`${aus.n} echte Fälle${x.setup&&aus.gleich?" mit diesem Muster":""}`:"Faustregel",p,u,net,netP,st,linie,beU,einsatz,peak,peakU,peakE:eur(peak),linieE:linie!=null?eur(linie):null,zielE,stopE,pZ,pS,evHalt,jetztE,gedreht}}
+  return {ko,koAbst,hebelJetzt,f,quelle:aus?`${aus.n} echte Fälle${x.setup&&aus.gleich?" mit diesem Muster":""}`:"Faustregel",p,u,net,netP,st,linie,beU,einsatz,peak,peakU,peakE:eur(peak),linieE:linie!=null?eur(linie):null,zielE,stopE,pZ,pS,evHalt,jetztE,gedreht}}
 
 const K={GT,GS,NG,gi,MAXB,PFAD,MUSTER,MKEYS,tagVon,minutenVon,prep,marktKarte,merkmale,muster,ausgang,leer,zaehle,kompakt,p80aus,wahrsch,dipStat,fallAus,aehnlich,haltenAus,spreadF,kostenF,nachSt,bewerte,stand};
 if(typeof module!=="undefined"&&module.exports)module.exports=K;G.KERN=K;

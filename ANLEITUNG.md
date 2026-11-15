@@ -13,6 +13,8 @@ Teil 1 und 2 machst du einmal am Handy oder PC im Browser. Teil 3 später, wenn 
 4. Nach 1–2 Minuten läuft die App unter **https://timaxgg.github.io/Day-dr72818/**
 5. Auf dem Handy öffnen → Browser-Menü → **Zum Startbildschirm hinzufügen**
 
+In der App unter ⚙️ siehst du ganz unten **„Verbindung App ↔ Bot“** mit Knopf **„Verbindung testen“** – dort steht, was noch fehlt.
+
 Die App nimmt GitHub-Token, Sync-Passwort und Finnhub-Schlüssel automatisch aus deinem Aktien Helfer (gleiche Adresse timaxgg.github.io).
 Falls dein GitHub-Token nur für den Aktien Helfer freigegeben ist: In der App ⚙️ → „Verbindung“ einen Token eintragen, der auch **Day-dr72818** darf (Rechte: *Contents: Read and write*, *Actions: Read and write*).
 
@@ -91,7 +93,9 @@ Gleiche Schritte wie 3.3, nur mit `sudo apt install -y nodejs git` statt `pkg �
 ---
 
 ## So arbeitet der Bot
-- **Kurse:** Yahoo (5-Minuten-Kerzen, DAX ca. 15 Min. verzögert), Finnhub live für US-Aktien in deinen Trades.
+- **Aktien:** 150 – 80 aus den USA, 40 aus dem DAX, 30 große europäische Werte.
+- **Kurse:** Yahoo (5-Minuten-Kerzen, Europa ca. 15 Min. verzögert), Finnhub live für US-Aktien in deinen Trades.
+- **Produkte:** Knock-out (Standard), Faktor-Zertifikat oder Aktie. Beim Knock-out die Schwelle aus dem Namen in Trade Republic eintragen („Long 174,43 $“ → 174,43) – die App rechnet Hebel und Abstand zum Knock-out live.
 - **Muster:** 10 feste Regeln (5 Long, 5 Short), jede an den letzten 60 Handelstagen nachgerechnet: Was kam zuerst, Ziel oder Stop? Kommen beide in derselben 5-Minuten-Kerze, zählt es als Stop.
 - **Keine Signale** in den ersten 15 und letzten 45 Minuten, bei schlechten Nachrichten und an Tagen mit Quartalszahlen.
 - **Selbstkontrolle:** Jedes Signal wird nach Ablauf mit dem echten Verlauf verglichen (App → Bilanz). Fehler und Ausfälle stehen in `/status` und in der App.
