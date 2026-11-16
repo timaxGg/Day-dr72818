@@ -46,6 +46,24 @@ const MARKT={us:{tz:"America/New_York",auf:570,zu:960,ref:"SPY",liste:US,cur:"US
 const NAME=Object.fromEntries([...US,...DE]),MVON=s=>/\.[A-Z]{1,3}$/.test(s)?"de":"us"; // „de“ = alle europäischen Börsen (9:00–17:30 Uhr)
 const REPLAY=["ASML","ASML.AS","TTWO","NBIS","NVDA","TSLA","AMD","AAPL","META","MSFT","AMZN","PLTR","COIN","MSTR","SMCI","NFLX","AVGO","GOOGL","QQQ","SAP.DE","RHM.DE","SIE.DE","IFX.DE","ALV.DE","DBK.DE","ENR.DE","AIR.DE","MBG.DE","BMW.DE","DTE.DE","ZAL.DE","CBK.DE","BAYN.DE","ADS.DE"];
 
+/* ---------- Eigene Aktien aus der App (+ Aktie hinzufügen) ---------- */
+// Die App schickt Suchbegriffe (Name, Kürzel oder ISIN der Aktie). Der Bot sucht das passende Yahoo-Kürzel und nimmt die Aktie in Statistik und Suche auf.
+const EXTRA=()=>Object.values(S.extra||{}).filter(x=>x.s);
+const liste=m=>[...MARKT[m].liste.map(x=>x[0]),...EXTRA().filter(x=>x.m===m&&!MARKT[m].liste.some(y=>y[0]===x.s)).map(x=>x.s)];
+async function aufloesen(q){const z=String(q).trim();if(!z)return null;
+  try{const j=await holen(`https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(z)}&quotesCount=8&newsCount=0`);
+    const qs=((j&&j.quotes)||[]).filter(x=>["EQUITY","ETF"].includes(x.quoteType)&&x.symbol);
+    const gut=qs.find(x=>!/\./.test(x.symbol))||qs.find(x=>/\.(DE|AS|PA|MI|MC|SW|CO|HE|ST)$/.test(x.symbol))||qs[0];if(!gut)return {q:z,fehler:"nichts gefunden"};
+    const r=await yahoo(gut.symbol,"5d");if(r.B.c.length<50)return {q:z,fehler:"zu wenig Kurse"};
+    return {q:z,s:gut.symbol,n:gut.shortname||gut.longname||gut.symbol,m:MVON(gut.symbol),cur:r.cur}}catch(e){return {q:z,fehler:e.message}}}
+async function extrasPruefen(){const wunsch=Array.isArray(EINST.extra)?EINST.extra.slice(0,30):[];S.extra=S.extra||{};let neu=[];
+  for(const q of wunsch){if(S.extra[q])continue;const r=await aufloesen(q);if(r){S.extra[q]=r;if(r.s){NAME[r.s]=r.n;neu.push(r.s)}}}
+  for(const q of Object.keys(S.extra))if(!wunsch.includes(q))delete S.extra[q];
+  for(const x of EXTRA())NAME[x.s]=NAME[x.s]||x.n;
+  D.extra=Object.values(S.extra).map(x=>({q:x.q,s:x.s||null,n:x.n||null,fehler:x.fehler||null}));
+  for(const s of neu){try{await symbolStatistik(s);protokoll("info",s,`Aktie hinzugefügt: ${NAME[s]} (${s})`)}catch(e){fehler("extra",`${s}: ${e.message}`)}}
+  if(neu.length)geaendert=true}
+
 /* ---------- Zeit ---------- */
 function zeit(tz,d=new Date()){const p=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",weekday:"short",hourCycle:"h23"}).formatToParts(d),g=k=>(p.find(x=>x.type===k)||{}).value;
   return {date:`${g("year")}-${g("month")}-${g("day")}`,min:+g("hour")*60+ +g("minute"),wd:g("weekday")}}
@@ -96,7 +114,7 @@ async function befehl(c){const jetzt=Date.now();log("Telegram-Befehl",c);
 async function tagesStatistik(){const t0=Date.now();log("Tagesstatistik startet");const PR={},RP={},MK={};
   for(const m of ["us","de"]){const M=MARKT[m];
     try{const r=await yahoo(M.ref,"60d");RP[m]=K.prep(r.B,M.tz);MK[m]=K.marktKarte(RP[m])}catch(e){fehler("index",`${M.ref}: ${e.message}`)}
-    await parallel(M.liste.map(x=>x[0]),4,async s=>{const r=await yahoo(s,"60d");if(r.B.c.length<500)throw new Error("zu wenige Kerzen");PR[s]=K.prep(r.B,M.tz);PR[s].m=m;PR[s].cur=r.cur})}
+    await parallel(liste(m),4,async s=>{const r=await yahoo(s,"60d");if(r.B.c.length<500)throw new Error("zu wenige Kerzen");PR[s]=K.prep(r.B,M.tz);PR[s].m=m;PR[s].cur=r.cur})}
   const stat={},statSym={},events={},slot={us:{long:[],short:[]},de:{long:[],short:[]}},slotSym={long:{},short:{}},nach={},faelle=[],ab=Date.now()/1000-30*86400;
   const sl=(arr,k)=>arr[k]||(arr[k]=Array.from({length:K.NG},()=>[0,0]));
   for(const [s,Pr] of Object.entries(PR)){const m=Pr.m;for(let i=0;i<Pr.n-1;i++){const x=K.merkmale(Pr,i,MK[m]);if(!x||x.rest<30)continue;const k=Math.floor(x.min/30);
@@ -123,6 +141,16 @@ async function tagesStatistik(){const t0=Date.now();log("Tagesstatistik startet"
   S.statTag=zeit("Europe/Berlin").date;writeJSON(P(".state/zeiten.json"),Z);writeJSON(P(".state/faelle.json"),FAELLE);writeJSON(P(".state/tage.json"),TAGE);
   protokoll("info","",`Statistik neu berechnet: ${Object.keys(PR).length} Aktien, ${faelle.length} Fälle`,{Dauer:Math.round((Date.now()-t0)/1000)+" s"});log("Tagesstatistik fertig",Object.keys(PR).length,"Aktien",Math.round((Date.now()-t0)/1000),"s");geaendert=true}
 
+// Statistik für eine einzelne neu hinzugefügte Aktie (die Gesamt-Statistik aller Muster bleibt, nur die eigenen Werte dieser Aktie kommen dazu)
+async function symbolStatistik(s){const m=MVON(s),M=MARKT[m],r=await yahoo(s,"60d"),rr=await yahoo(M.ref,"60d");if(r.B.c.length<300)throw new Error("zu wenige Kerzen");
+  const Pr=K.prep(r.B,M.tz),MK=K.marktKarte(K.prep(rr.B,M.tz)),own={},sl={long:[],short:[]};
+  for(let i=0;i<Pr.n-1;i++){const x=K.merkmale(Pr,i,MK);if(!x||x.rest<30)continue;const k=Math.floor(x.min/30);
+    for(const d of [1,-1]){const a=K.ausgang(Pr,i,d);if(!a)continue;const dir=d>0?"long":"short",S2=sl[dir][k]||(sl[dir][k]=Array.from({length:K.NG},()=>[0,0]));
+      for(let g=0;g<K.NG;g++){S2[g][0]++;S2[g][1]+=a.r[g][0]>0?1:0}
+      for(const key of K.muster(x).filter(q=>q.startsWith(dir)))K.zaehle(own[key]||(own[key]=K.leer()),a)}}
+  S.statSym[s]=Object.fromEntries(Object.entries(own).map(([k,v])=>[k,K.kompakt(v)]));
+  if(Z){Z.sym[s]=sl.long;Z.short.sym[s]=sl.short;writeJSON(P(".state/zeiten.json"),Z)}}
+
 /* ---------- Nachrichten und Quartalszahlen ---------- */
 const GUT=/\b(beat|beats|raise[sd]?|upgrade[sd]?|record|surge[sd]?|jump[sd]?|soar|strong|buyback|approval|wins?|übertrifft|hebt|anhebt|rekord|kaufempfehlung|hochgestuft|steigt|gewinnt|auftrag)\b/i;
 const SCHLECHT=/\b(miss(es|ed)?|cut[s]?|downgrade[sd]?|lawsuit|probe|investigation|recall|plunge[sd]?|fall[s]?|weak|warns?|warning|fraud|senkt|gesenkt|abgestuft|warnt|klage|ermittlung|rückruf|bricht ein|verlust|schwach)\b/i;
@@ -145,7 +173,7 @@ const hebel=()=>EINST.modus==="aktie"?1:+EINST.faktor;
 async function scan(m){const M=MARKT[m],jetzt=Date.now(),z=zeit(M.tz);let R=null;
   try{const r=await yahoo(M.ref,"5d");R=K.prep(r.B,M.tz)}catch(e){fehler("index",e.message)}const MK=K.marktKarte(R);
   const mk=R?MK.get(R.B.t[R.n-1]):0;D.markt[m]={offen:offen(m),auf:jetzt-(z.min-M.auf)*6e4,zu:schlussMs(m),trend:mk>0?"auf":mk<0?"ab":"seit"};
-  await parallel(M.liste.map(x=>x[0]),5,async s=>{const r=await yahoo(s,"5d");const Pr=K.prep(r.B,M.tz),B=r.B,n=Pr.n;if(n<30)return;
+  await parallel(liste(m),5,async s=>{const r=await yahoo(s,"5d");const Pr=K.prep(r.B,M.tz),B=r.B,n=Pr.n;if(n<30)return;
     // nur abgeschlossene Kerzen bewerten (die letzte läuft evtl. noch)
     let i=n-1;if(B.t[i]+300>jetzt/1000)i--;const heute=Pr.ds[n-1];if(E.TEST_ALLE)i=heute+30+Math.floor(Math.random()*30);const x=K.merkmale(Pr,i,MK),p=LIVE[s]&&jetzt-LIVE[s].t<6e4?LIVE[s].p:(r.p||B.c[n-1]);
     const tag=(a,b)=>B.t.slice(a,b).map((t,j)=>[t*1000,+B.c[a+j].toFixed(3)]),idx5=Pr.ds[Math.max(0,heute-1)];
@@ -162,7 +190,7 @@ async function scan(m){const M=MARKT[m],jetzt=Date.now(),z=zeit(M.tz);let R=null
       if(m==="us"&&S.zahlen.s.includes(s)){sig.block="Quartalszahlen heute oder morgen – zu unberechenbar";}
       D.signale.push(sig);await neuesSignal(sig)}});
   // Monatsverlauf einmal pro Tag (Tageskerzen)
-  if(S.monatTag!==z.date+m){S.monatTag=z.date+m;await parallel(M.liste.map(x=>x[0]),4,async s=>{const r=await yahoo(s,"1mo","1d");if(V[s])V[s]["1M"]=r.B.t.map((t,j)=>[t*1000,+r.B.c[j].toFixed(3)])})}
+  if(S.monatTag!==z.date+m){S.monatTag=z.date+m;await parallel(liste(m),4,async s=>{const r=await yahoo(s,"1mo","1d");if(V[s])V[s]["1M"]=r.B.t.map((t,j)=>[t*1000,+r.B.c[j].toFixed(3)])})}
   if(!E.TEST_ALLE)D.signale=D.signale.filter(x=>jetzt-x.t<3*36e5);geaendert=true}
 async function neuesSignal(x){x.news=await nachrichten(x.s);if(x.news.g==="negativ"&&!x.block)x.block="Schlechte Nachricht heute";
   const b=K.bewerte(EINST,x,EINST.T,EINST.S,hebel());if(!b)return;const p=Math.round(b.pPlus*100),sich=b.t>=3?"sehr gut belegt":b.t>=2?"gut belegt":"wenig belegt";
@@ -232,7 +260,7 @@ export async function main(){const start=Date.now();log("Start",WER,REPO);
   while(true){const jetzt=Date.now(),z=zeit("Europe/Berlin"),offenM=["us","de"].filter(m=>offen(m)),bald=["us","de"].some(m=>offen(m,90,0));S.letzt=jetzt;
     if(bald&&S.statTag!==z.date&&["us","de"].some(handelstag))try{await tagesStatistik()}catch(e){fehler("statistik",e.message)}
     if(!S.statTag&&!Z)try{await tagesStatistik()}catch(e){fehler("statistik",e.message)}
-    if(jetzt-tick.pos>30e3){tick.pos=jetzt;await positionenLesen()}
+    if(jetzt-tick.pos>30e3){tick.pos=jetzt;await positionenLesen();await extrasPruefen()}
     if(POS.pos.length)await ueberwachen();
     for(const m of offenM)if(jetzt-tick.scan[m]>120e3){tick.scan[m]=jetzt;if(m==="us")await quartalszahlen();try{await scan(m)}catch(e){fehler("scan",e.message)}}
     for(const m of ["us","de"])if(!offen(m)&&D.markt[m]&&D.markt[m].offen){D.markt[m].offen=false;geaendert=true}
