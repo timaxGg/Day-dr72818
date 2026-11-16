@@ -11,7 +11,7 @@ const TG=E.TELEGRAM_TOKEN||"",FH=E.FINNHUB_KEY||"",PASS=E.SYNC_PASSWORD||"",API=
 let CHAT=String(E.TELEGRAM_CHAT||"");
 const REPO=E.GITHUB_REPOSITORY||E.REPO||"timaxGg/Day-dr72818";
 const APP=(E.APP_URL||`https://${REPO.split("/")[0].toLowerCase()}.github.io/${REPO.split("/")[1]}/`).replace(/\/?$/,"/");
-const LAUF_MIN=+(E.LAUF_MIN||(WER==="github"?330:360)); // GitHub: höchstens 5,5 Std. am Stück; Handy/Server: alle 6 Std. kurz neu starten (holt dabei Updates)
+const LAUF_MIN=+(E.LAUF_MIN||(WER==="github"?330:60)); // GitHub: höchstens 5,5 Std. am Stück; Handy/Server: jede Stunde kurz neu starten (holt dabei Updates, dauert ~15 s)
 const P=f=>`${ROOT}/${f}`,SF=P(".state/stand.json"),OUT=P(".state/out");
 const log=(...a)=>console.log(new Date().toLocaleTimeString("de-DE",{timeZone:"Europe/Berlin"}),...a);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -102,8 +102,10 @@ async function telegramEingang(warte){if(!TG)return sleep(warte*1000);const r=aw
   for(const u of r.result||[]){S.offset=u.update_id+1;const m=u.message;if(!m||!m.text)continue;const chat=String(m.chat.id);
     if(!CHAT){await tg("sendMessage",{chat_id:chat,parse_mode:"HTML",text:`👋 Hallo! Deine Chat-ID ist:\n\n<code>${chat}</code>\n\nTrag sie bei GitHub als Secret <b>TELEGRAM_CHAT</b> ein (und auf dem Handy in der Datei .env). Danach schreibe ich dir.`});continue}
     if(chat!==CHAT){fehler("telegram",`Nachricht von Chat ${chat}, eingetragen ist TELEGRAM_CHAT=${CHAT} – stimmt die Chat-ID?`);continue}await befehl(m.text.trim().split(/\s+/)[0].toLowerCase().replace(/@.*/,""))}}
+let NEUSTART=false;
 async function befehl(c){const jetzt=Date.now();log("Telegram-Befehl",c);
-  if(c==="/start"||c==="/hilfe")return senden(`🤖 <b>Day-Trader Bot</b>\n/jetzt – aktuelle Einstiege\n/meine – deine offenen Trades\n/status – läuft alles?\n\nEilige Meldungen kommen mit 🚨.`,{knopf:["App öffnen",APP]});
+  if(c==="/update"){NEUSTART=true;return senden(`🔄 <b>Update</b>\nIch hole die neueste Version und starte neu (${WER}). In etwa 1 Minute bin ich wieder da – prüfen mit /status.`)}
+  if(c==="/start"||c==="/hilfe")return senden(`🤖 <b>Day-Trader Bot</b>\n/jetzt – aktuelle Einstiege\n/meine – deine offenen Trades\n/status – läuft alles?\n/update – neueste Version holen und neu starten\n\nEilige Meldungen kommen mit 🚨.`,{knopf:["App öffnen",APP]});
   if(c==="/jetzt"){const l=D.signale.filter(x=>x.bis>jetzt).map(x=>({x,b:K.bewerte(EINST,x,EINST.T,EINST.S,hebel())})).filter(o=>o.b).sort((a,b)=>b.b.eEv-a.b.eEv).slice(0,6);
     return senden(l.length?`📋 <b>Aktive Einstiege</b>\n`+l.map(o=>`${o.b.ev>0&&o.b.t>=2?"🟢":o.b.ev>0?"🟡":"⚪"} <b>${esc(o.x.n)}</b> ${o.x.dir==="short"?"SHORT ↘":"LONG ↗"} · Gewinn-Chance ${Math.round(o.b.pPlus*100)} % · bis ${uhr(o.x.bis)} · Ø ${eu(o.b.eEv)}`).join("\n"):"Gerade kein Einstieg. Ich melde mich, sobald einer kommt.",{knopf:["App öffnen",APP]})}
   if(c==="/meine"){const l=POS.pos.map(x=>({x,s:S.posSt[x.id]})).filter(o=>o.s);return senden(l.length?`📈 <b>Deine Trades</b>\n`+l.map(o=>`${o.x.ueb?"🧪 ":""}<b>${esc(o.x.n)}</b> ${eu(o.s.net)} · ${TUN[o.s.st][1]}`).join("\n"):"Keine offenen Trades.",{knopf:["App öffnen",APP+"#meine"]})}
@@ -313,6 +315,6 @@ export async function main(){const start=Date.now();log("Start",WER,REPO);
     if(WER==="github"){if(jetzt-tick.fremd>60e3){tick.fremd=jetzt;const f=fremderLauf();if(f){log(`${f} ist wieder da – GitHub übergibt.`);break}}
       if(!offenM.length&&!POS.pos.length&&!bald&&jetzt-start>(+E.RUHE_MIN||14)*6e4)break} // auch nachts ~14 Min. wach bleiben, damit Telegram-Befehle schnell beantwortet werden
     if(LAUF_MIN&&jetzt-start>LAUF_MIN*6e4)break;
-    await telegramEingang(offenM.length||POS.pos.length?15:25)}
+    await telegramEingang(offenM.length||POS.pos.length?15:25);if(NEUSTART){log("Neustart per /update");break}}
   await veroeffentlichen(true);sichern();log("Ende")}
 if(import.meta.url===`file://${process.argv[1]}`)main().catch(e=>{console.error(e);process.exit(1)});
