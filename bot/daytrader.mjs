@@ -188,7 +188,8 @@ async function scan(m){const M=MARKT[m],jetzt=Date.now(),z=zeit(M.tz);let R=null
       const sig={id,dir,s,n:NAME[s],m,cur:r.cur||M.cur,setup:key,setupN:MU.n,warum,t,p0:+B.c[i].toFixed(3),bis:t+10*6e4,zu:schlussMs(m),...w,
         dip16:(S.dip[key]||[]).map(o=>o||null),spark:v1d,vw:Pr.vw.slice(heute,n).map(v=>+v.toFixed(3)),fall:K.fallAus(s,t,key,x,{pfad:new Array(K.PFAD).fill(0),r:new Array(16).fill([0,0,0])}).f};
       if(m==="us"&&S.zahlen.s.includes(s)){sig.block="Quartalszahlen heute oder morgen – zu unberechenbar";}
-      D.signale.push(sig);await neuesSignal(sig)}});
+      D.signale.push(sig);await neuesSignal(sig)}
+    try{await vorstufe(s,m,x,+p)}catch(e){fehler("vorwarnung",`${s}: ${e.message}`)}});
   // Monatsverlauf einmal pro Tag (Tageskerzen)
   if(S.monatTag!==z.date+m){S.monatTag=z.date+m;await parallel(liste(m),4,async s=>{const r=await yahoo(s,"1mo","1d");if(V[s])V[s]["1M"]=r.B.t.map((t,j)=>[t*1000,+r.B.c[j].toFixed(3)])})}
   if(!E.TEST_ALLE)D.signale=D.signale.filter(x=>jetzt-x.t<3*36e5);geaendert=true}
@@ -200,7 +201,47 @@ async function neuesSignal(x){x.news=await nachrichten(x.s);if(x.news.g==="negat
   await senden(`🚨 <b>EINSTIEG: ${esc(x.n)} ${x.dir==="short"?"SHORT ↘":"LONG ↗"}</b> 🟢 Gewinn-Chance ${p} %\n`+
     `⏱ Kaufen bis <b>${uhr(x.bis)}</b> · Aktie ${d<0?"über":"unter"} ${nf(x.p0*(1+d*EINST.T*.25/100))} ${cur}\n`+
     `🎯 Ziel ${nf(zl)} ${cur} (${pz(d*EINST.T,2)}) → <b>${eu(b.eWin)}</b>\n🛑 Stop ${nf(st)} ${cur} → ${eu(b.eLoss)}\n`+
-    `⌛ Ziel meist nach ~${b.min} Min. · Richtwert bis ${uhr(x.t+richt*6e4)}\n📊 Hebel ×${hebel()} · Ø ${eu(b.eEv)} nach Kosten · ${sich}\n🎯 Ziel zuerst ${Math.round(b.p*100)} % · Stop zuerst ${Math.round(b.pl*100)} % · Rest: Richtzeit\n📰 Nachrichten: ${x.news.g}`,{knopf:["In der App öffnen",APP+"#jetzt"]})}
+    `⌛ Ziel meist nach ~${b.min} Min. · Richtwert bis ${uhr(x.t+richt*6e4)}\n📊 Hebel ×${hebel()} · Ø ${eu(b.eEv)} nach Kosten · ${sich}\n🎯 Ziel zuerst ${Math.round(b.p*100)} % · Stop zuerst ${Math.round(b.pl*100)} % · Rest: Richtzeit\n📰 Nachrichten: ${x.news.g}${dipZeile(x,b)}`,{knopf:["In der App öffnen",APP+"#jetzt"]});
+  const vv=S.vw&&S.vw.vor&&S.vw.vor[`${x.s}:${x.setup}`];if(vv)vv.erl="signal";
+  S.offeneSig=S.offeneSig||[];S.offeneSig.push({id:x.id,s:x.s,n:x.n,m:x.m,dir:x.dir,p0:x.p0,bis:x.bis})}
+// Dip-Limit aus den echten Fällen dieses Musters: wie tief es vor dem Ziel meist zurückkam, wie oft das Limit erreicht wurde und wie oft es danach geklappt hat
+function dipZeile(x,b){const dp=(x.dip16||[])[K.gi(EINST.T,EINST.S)];if(!dp||dp.p<=b.p)return "";const d=x.dir==="short"?-1:1,c=x.cur==="USD"?"$":"€";
+  return `\n💧 <b>Dip-Kauf:</b> Limit ${nf(x.p0*(1-d*dp.tief/100))} ${c} (${pz(-d*dp.tief,2)}) – früher in ${Math.round(dp.q*100)} % erreicht, danach Ziel ${Math.round(dp.p*100)} % statt ${Math.round(b.p*100)} %`}
+
+/* ---------- Morgenmeldung, Vorwarnung und „doch nicht kaufen“ ---------- */
+// Nachgerechnet: Eine Uhrzeit allein bringt nach Kosten keinen belegbaren Vorteil (keines der Aktie×Halbe-Stunde-Fenster liegt bei Hebel 10 sicher über der Gewinnschwelle).
+// Der Vorteil steckt in den Mustern. Darum warnt der Bot vor, wenn sich ein lohnendes Dip-Muster anbahnt, und meldet dann den Einstieg oder ein „nicht kaufen“.
+const nmDir=(s,dir)=>`${esc(NAME[s]||s)} ${dir==="short"?"SHORT ↘":"LONG ↗"}`,wz=s=>MVON(s)==="us"?"$":"€";
+// Vorstufe: das Muster ist noch nicht da (die Wende-Kerze fehlt), aber der Abverkauf bzw. die Übertreibung läuft schon
+const VORSTUFE={"long:abprall":x=>x.rsi<35&&x.c<x.vw*(1-x.atr/100)&&x.mkt>-1,"short:ueberkauft":x=>x.rsi>65&&x.c>x.vw*(1+x.atr/100)&&x.mkt<1};
+const AUFGELOEST={"long:abprall":x=>x.rsi>45||x.c>x.vw,"short:ueberkauft":x=>x.rsi<55||x.c<x.vw};
+function lohntSich(s,key){const w=K.wahrsch(S.statSym[s]&&S.statSym[s][key],S.stat[key]);if(w.nT<30)return null;const b=K.bewerte(EINST,w,EINST.T,EINST.S,hebel());
+  if(!b||b.ev<=0||b.t<(EINST.minT??2)||b.pPlus<EINST.minP/100)return null;return b}
+const vwTag=()=>{const tag=zeit("Europe/Berlin").date;if(!S.vw||S.vw.d!==tag)S.vw={d:tag,morgen:{},vor:{}};S.vw.vor=S.vw.vor||{};S.vw.morgen=S.vw.morgen||{};return S.vw};
+async function vorstufe(s,m,x,p){const V=vwTag(),jetzt=Date.now(),c=wz(s);
+  for(const key of Object.keys(VORSTUFE)){const dir=key.startsWith("short")?"short":"long";if(EINST.richtung&&EINST.richtung!=="beide"&&EINST.richtung!==dir)continue;
+    const id=`${s}:${key}`,d=dir==="short"?-1:1,nm=nmDir(s,dir),MU=K.MUSTER[key];let v=V.vor[id];if(v&&v.erl&&jetzt-v.t>90*6e4){delete V.vor[id];v=null}
+    if(!v){if(!VORSTUFE[key](x)||K.muster(x).includes(key))continue;const b=lohntSich(s,key);if(!b)continue;if(Object.values(V.vor).filter(y=>!y.erl).length>=4)continue;
+      V.vor[id]={t:jetzt,p,erl:null};protokoll("info",s,`Vorwarnung: ${NAME[s]} ${dir} (${MU.n})`,{RSI:Math.round(x.rsi),"Abstand Tagesschnitt":pz(x.vwAbst,2),"Gewinn-Chance":Math.round(b.pPlus*100)+" %","Ø nach Kosten":eu(b.eEv)});
+      await senden(`⏰ <b>VORWARNUNG – ${d>0?"Dip bahnt sich an":"Übertreibung bahnt sich an"}: ${nm}</b>\nKurs ${nf(p)} ${c} · heute ${pz(x.dch,2)} · RSI ${Math.round(x.rsi)} · ${pz(x.vwAbst,1)} zum Tagesschnitt\n\nIch warte auf das Muster „${esc(MU.n)}“: die erste ${d>0?"grüne":"rote"} Kerze nach dem ${d>0?"Abverkauf":"Anstieg"}.\nFrüher bei diesem Muster: Gewinn-Chance <b>${Math.round(b.pPlus*100)} %</b> · Ø <b>${eu(b.eEv)}</b> nach Kosten (×${hebel()}, ${nf(EINST.einsatz,0)} €) · ${b.t>=3?"sehr gut belegt":"gut belegt"}\n\n👉 Jetzt ${d>0?"Long":"Short"}-Knock-out raussuchen und bereithalten.\n✋ Noch <b>nicht kaufen</b> – ${d>0?"nicht ins fallende Messer greifen":"nicht gegen den laufenden Anstieg"}.\nIch schicke 🚨 EINSTIEG, sobald es dreht – oder ❌, wenn es nicht mehr passt.`,{knopf:["Kurs in der App",APP+"#jetzt"]});continue}
+    if(v.erl)continue;const gr=[];if(d>0&&x.mkt<=-1)gr.push("der Gesamtmarkt bricht ein");if(d<0&&x.mkt>=1)gr.push("der Gesamtmarkt zieht stark an");
+    if(m==="us"&&S.zahlen.s.includes(s))gr.push("Quartalszahlen heute oder morgen");const nw=await nachrichten(s);if(d>0&&nw.g==="negativ")gr.push("schlechte Nachricht heute – der Abverkauf kann einen Grund haben");if(d<0&&nw.g==="positiv")gr.push("gute Nachricht heute – der Anstieg kann einen Grund haben");
+    if(!lohntSich(s,key))gr.push("die Rechnung lohnt sich mit deinen Einstellungen nicht mehr");
+    if(gr.length){v.erl="nein";protokoll("info",s,`Vorwarnung zurückgezogen: ${NAME[s]} – ${gr.join(", ")}`);await senden(`❌ <b>NICHT KAUFEN: ${nm}</b>\nDie Vorwarnung von ${uhr(v.t)} gilt nicht mehr: ${gr.join(" · ")}.\nKurs ${nf(p)} ${c}.`)}
+    else if(AUFGELOEST[key](x)||jetzt-v.t>60*6e4){v.erl="weg";await senden(`ℹ️ <b>${nm}:</b> Vorwarnung von ${uhr(v.t)} erledigt – ${AUFGELOEST[key](x)?"der Kurs hat sich ohne sauberes Muster erholt":"seit einer Stunde kein sauberes Muster"}. Nicht kaufen.`)}}}
+async function vorwarnungen(){const jetzt=Date.now(),V=vwTag();
+  // Morgenmeldung 30 Min. vor Börsenstart: welche Muster sich mit deinen Einstellungen gerade nach Kosten lohnen
+  for(const m of ["us","de"]){if(!handelstag(m)||!S.stat||V.morgen[m])continue;const M=MARKT[m],z=zeit(M.tz);if(!(z.min>=M.auf-30&&z.min<M.zu-60))continue;V.morgen[m]=1;
+    const l=K.MKEYS.map(k=>{const w=K.wahrsch(null,S.stat[k]);const b=w.nT>=30?K.bewerte(EINST,w,EINST.T,EINST.S,hebel()):null;return {k,b}}).filter(o=>o.b&&o.b.ev>0&&o.b.t>=(EINST.minT??2)&&o.b.pPlus>=EINST.minP/100&&(!EINST.richtung||EINST.richtung==="beide"||o.k.startsWith(EINST.richtung)));
+    await senden(`☀️ <b>Guten Morgen – ${m==="us"?"USA ab "+uhr(jetzt+(M.auf-z.min)*6e4):"Europa ab "+uhr(jetzt+(M.auf-z.min)*6e4)}</b>\n`+(l.length?`Mit Hebel ×${hebel()} und Ziel ${pz(EINST.T,2)} / Stop ${pz(-EINST.S,2)} lohnt sich nach Kosten:\n`+l.map(o=>`• ${esc(K.MUSTER[o.k].n)} ${o.k.startsWith("short")?"SHORT":"LONG"} – Chance ${Math.round(o.b.pPlus*100)} % · Ø ${eu(o.b.eEv)}`).join("\n")+`\n\nIch melde mich mit ⏰ Vorwarnung, sobald sich so ein Dip anbahnt, dann mit 🚨 EINSTIEG oder ❌.`
+      :`Mit deinen Einstellungen lohnt sich nach Kosten gerade kein Muster sicher genug. Ich melde nur, wenn sich das ändert.`)+`\n<i>Grundlage: letzte 60 Handelstage, alle 150 Aktien.</i>`)}
+  // Gesendete EINSTIEG-Signale: noch nicht gekauft und die Lage kippt → sofort warnen
+  S.offeneSig=(S.offeneSig||[]).filter(x=>jetzt<x.bis+10*6e4&&!x.erl);
+  for(const x of S.offeneSig){if(POS.pos.some(p=>p.s===x.s))continue;const p=await kursJetzt(x.s);if(!p)continue;const d=x.dir==="short"?-1:1,u=d*(p/x.p0-1)*100,mt=D.markt[x.m]&&D.markt[x.m].trend;let gr=null;
+    if(u<=-.5*EINST.S)gr=`Der Kurs ist schon ${pz(u,2)} gegen dich gelaufen – das Muster gilt nicht mehr`;
+    else if(u>=.25*EINST.T)gr=`Schon ${pz(u,2)} gelaufen, über dem Kauflimit – zu spät, nicht hinterherkaufen`;
+    else if((d>0&&mt==="ab")||(d<0&&mt==="auf"))gr=`Der Gesamtmarkt hat gedreht (${mt==="ab"?"fällt":"steigt"})`;
+    if(gr){x.erl=1;protokoll("info",x.s,`Signal zurückgezogen: ${x.n} – ${gr}`);await senden(`❌ <b>NICHT MEHR KAUFEN: ${nmDir(x.s,x.dir)}</b>\n${gr}.\nKurs ${nf(p)} ${wz(x.s)} (Signal bei ${nf(x.p0)}).\nFalls du schon gekauft hast: in der App eintragen, dann rechne ich Halten gegen Verkaufen.`)}}}
 
 /* ---------- Offene Trades überwachen ---------- */
 const TUN={ko:["💥","KNOCK-OUT – Zertifikat ist wertlos"],konah:["🚨","SOFORT VERKAUFEN – Knock-out ist nah"],halten:["⏳","HALTEN"],ziel:["🎯","JETZT VERKAUFEN – Ziel erreicht"],stop:["🛑","SOFORT VERKAUFEN – Stop erreicht"],dreht:["⚠️","VERKAUFEN – lieber jetzt sichern"],
@@ -256,7 +297,7 @@ export async function main(){const start=Date.now();log("Start",WER,REPO);
   if(S.statTag&&fs.existsSync(P(".state/zeiten.json"))){Z=readJSON(P(".state/zeiten.json"),null);FAELLE=readJSON(P(".state/faelle.json"),[]);TAGE=readJSON(P(".state/tage.json"),{})}
   const altD=readJSON(`${OUT}/day.json`,null);if(altD&&Date.now()-altD.t<6*36e5){D.signale=altD.signale||[];D.kurse=altD.kurse||{};V=readJSON(`${OUT}/verlauf.json`,{})}
   await positionenLesen();await telegramEingang(0);
-  const tick={pos:0,scan:{us:0,de:0},pub:0,fremd:Date.now(),bil:0};
+  const tick={pos:0,scan:{us:0,de:0},pub:0,fremd:Date.now(),bil:0,vw:0};
   while(true){const jetzt=Date.now(),z=zeit("Europe/Berlin"),offenM=["us","de"].filter(m=>offen(m)),bald=["us","de"].some(m=>offen(m,90,0));S.letzt=jetzt;
     if(bald&&S.statTag!==z.date&&["us","de"].some(handelstag))try{await tagesStatistik()}catch(e){fehler("statistik",e.message)}
     if(!S.statTag&&!Z)try{await tagesStatistik()}catch(e){fehler("statistik",e.message)}
@@ -264,6 +305,7 @@ export async function main(){const start=Date.now();log("Start",WER,REPO);
     if(POS.pos.length)await ueberwachen();
     for(const m of offenM)if(jetzt-tick.scan[m]>120e3){tick.scan[m]=jetzt;if(m==="us")await quartalszahlen();try{await scan(m)}catch(e){fehler("scan",e.message)}}
     for(const m of ["us","de"])if(!offen(m)&&D.markt[m]&&D.markt[m].offen){D.markt[m].offen=false;geaendert=true}
+    if(jetzt-tick.vw>60e3){tick.vw=jetzt;try{await vorwarnungen()}catch(e){fehler("vorwarnung",e.message)}}
     if(jetzt-tick.bil>10*6e4){tick.bil=jetzt;await bilanz()}
     if(jetzt-tick.pub>(offenM.length?60e3:5*6e4)){tick.pub=jetzt;await veroeffentlichen(true)}else await veroeffentlichen(false);
     sichern();
