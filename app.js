@@ -647,5 +647,8 @@ document.addEventListener("change",e=>{const t=e.target;if(t.id==="zsym"){zSym=t
 window.addEventListener("popstate",()=>{if($("#sheet").classList.contains("open"))zu()});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)laden()});
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
-{const h=location.hash.slice(1);if(["jetzt","zeiten","meine","archiv","bilanz"].includes(h)){tab=h;history.replaceState(null,"",location.pathname)}}
-laden();setInterval(()=>{if(!document.hidden)laden()},30000);setInterval(tick,1000);
+// Links aus Telegram: #jetzt, #meine … oder #k=NVDA (öffnet direkt die Aktie)
+let KZ=null;function hashLesen(){const h=decodeURIComponent(location.hash.slice(1));if(!h)return;if(h.startsWith("k=")){KZ=h.slice(2);tab="jetzt"}else if(["jetzt","zeiten","meine","archiv","bilanz"].includes(h))tab=h;else return;history.replaceState(null,"",location.pathname)}
+function kzOeffnen(){if(KZ&&D&&D.kurse&&D.kurse[KZ]){const s=KZ;KZ=null;render(true);kursSheet(s)}}
+hashLesen();window.addEventListener("hashchange",()=>{hashLesen();render(true);kzOeffnen()});
+laden().then(kzOeffnen,()=>{});setInterval(()=>{if(!document.hidden)laden()},30000);setInterval(tick,1000);
