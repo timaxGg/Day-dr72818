@@ -1,65 +1,100 @@
-Strategy types test: 30 stocks, TRAIN 2026-06-24..2026-10-02 (71 days), TEST 2026-10-05..2026-11-20 (35 days)
-EUR 100 per trade; fee 1.00 = USD 1 per order, 0.35 = low-fee broker. Only TEST counts.
+Walk-forward test: 30 stocks, 2025-12-22..2026-11-20 (231 days). EUR 100 per trade, x10.
+Each month the bot uses only the settings that did best in the 3 months before it.
+If nothing made money in those 3 months, it sits the month out. Only these results count.
 
-== A ORB30  (192 settings tried) ==
-  {"range_bars": 6, "volx": 1.8, "stop": "far", "short": false, "exit": "2R", "lev": 10, "fee": 0.35, "stop_atr": 1.5}
-    TRAIN {"trades": 168, "per_day": 0.15, "before_fees_per_day": 1.59, "win": 38, "worst_day": -54.56}
-    TEST  {"trades": 64, "per_day": 1.25, "before_fees_per_day": 2.36, "win": 41, "worst_day": -49.06}
-  {"range_bars": 6, "volx": 1.8, "stop": "mid", "short": false, "exit": "2R", "lev": 10, "fee": 0.35, "stop_atr": 1.5}
-    TRAIN {"trades": 162, "per_day": 0.05, "before_fees_per_day": 1.44, "win": 39, "worst_day": -52.67}
-    TEST  {"trades": 61, "per_day": -2.48, "before_fees_per_day": -1.42, "win": 38, "worst_day": -64.58}
-  {"range_bars": 6, "volx": 1.8, "stop": "mid", "short": false, "exit": "2R", "lev": 5, "fee": 0.35, "stop_atr": 1.5}
-    TRAIN {"trades": 163, "per_day": -0.68, "before_fees_per_day": 0.72, "win": 39, "worst_day": -27.38}
-    TEST  {"trades": 61, "per_day": -1.77, "before_fees_per_day": -0.71, "win": 36, "worst_day": -32.9}
-  settings positive on TRAIN: 2 of 192
+== A ORB30  (fee USD 1.00 per order) ==
+  traded 4 of 9 test months, 165 trades, total EUR -348.55 (before fees EUR -61.59), EUR -4.15 per traded day, win 38%
+    2026-03  sat out
+    2026-04  sat out
+    2026-05  EUR   138.91   57 trades  {"range_bars": 6, "volx": 1.8, "stop": "mid", "short": false, "exit": "close", "regime": true, "lev": 10, "stop_atr": 1.5, "fee": 1.0}
+    2026-06  EUR   -27.45   34 trades  {"range_bars": 6, "volx": 1.8, "stop": "far", "short": true, "exit": "close", "regime": true, "lev": 10, "stop_atr": 3.0, "fee": 1.0}
+    2026-07  EUR  -338.88   35 trades  {"range_bars": 6, "volx": 1.8, "stop": "mid", "short": true, "exit": "close", "regime": true, "lev": 10, "stop_atr": 1.5, "fee": 1.0}
+    2026-08  EUR  -121.12   39 trades  {"range_bars": 6, "volx": 1.8, "stop": "mid", "short": false, "exit": "close", "regime": true, "lev": 10, "stop_atr": 1.5, "fee": 1.0}
+    2026-09  sat out
+    2026-10  sat out
+    2026-11  sat out
 
-== B GAP  (128 settings tried) ==
-  {"gap": 0.02, "mode": "fade", "exit": "2R", "lev": 10, "fee": 0.35, "stop_atr": 3.0}
-    TRAIN {"trades": 146, "per_day": 7.95, "before_fees_per_day": 9.2, "win": 49, "worst_day": -58.41}
-    TEST  {"trades": 77, "per_day": -12.26, "before_fees_per_day": -10.92, "win": 34, "worst_day": -89.82}
-  {"gap": 0.02, "mode": "fade", "exit": "2R", "lev": 10, "fee": 0.35, "stop_atr": 1.5}
-    TRAIN {"trades": 146, "per_day": 7.4, "before_fees_per_day": 8.66, "win": 48, "worst_day": -64.35}
-    TEST  {"trades": 77, "per_day": -12.78, "before_fees_per_day": -11.44, "win": 32, "worst_day": -89.82}
-  {"gap": 0.02, "mode": "fade", "exit": "close", "lev": 10, "fee": 0.35, "stop_atr": 3.0}
-    TRAIN {"trades": 146, "per_day": 6.27, "before_fees_per_day": 7.53, "win": 45, "worst_day": -58.41}
-    TEST  {"trades": 77, "per_day": -10.88, "before_fees_per_day": -9.54, "win": 31, "worst_day": -89.82}
-  settings positive on TRAIN: 76 of 128
+== B GAP  (fee USD 1.00 per order) ==
+  traded 6 of 9 test months, 148 trades, total EUR -406.64 (before fees EUR -149.25), EUR -3.31 per traded day, win 35%
+    2026-03  EUR  -142.92   17 trades  {"gap": 0.04, "mode": "go", "exit": "2R", "regime": false, "lev": 10, "stop_atr": 3.0, "fee": 1.0}
+    2026-04  sat out
+    2026-05  sat out
+    2026-06  sat out
+    2026-07  EUR  -156.49   31 trades  {"gap": 0.02, "mode": "go", "exit": "close", "regime": true, "lev": 10, "stop_atr": 1.5, "fee": 1.0}
+    2026-08  EUR   112.09   19 trades  {"gap": 0.02, "mode": "go", "exit": "close", "regime": true, "lev": 10, "stop_atr": 1.5, "fee": 1.0}
+    2026-09  EUR     8.79   22 trades  {"gap": 0.04, "mode": "fade", "exit": "2R", "regime": false, "lev": 10, "stop_atr": 3.0, "fee": 1.0}
+    2026-10  EUR  -323.92   42 trades  {"gap": 0.02, "mode": "fade", "exit": "2R", "regime": false, "lev": 10, "stop_atr": 3.0, "fee": 1.0}
+    2026-11  EUR    95.81   17 trades  {"gap": 0.04, "mode": "go", "exit": "2R", "regime": false, "lev": 10, "stop_atr": 3.0, "fee": 1.0}
 
-== C RS  (384 settings tried) ==
-  {"at": 1000, "k": 3, "min_rs": 0.015, "short": false, "exit": "close", "lev": 10, "fee": 0.35, "stop_atr": 1.5}
-    TRAIN {"trades": 195, "per_day": 4.24, "before_fees_per_day": 5.92, "win": 42, "worst_day": -75.35}
-    TEST  {"trades": 95, "per_day": -5.85, "before_fees_per_day": -4.2, "win": 42, "worst_day": -72.07}
-  {"at": 1000, "k": 3, "min_rs": 0.015, "short": true, "exit": "close", "lev": 10, "fee": 0.35, "stop_atr": 1.5}
-    TRAIN {"trades": 213, "per_day": 3.77, "before_fees_per_day": 5.6, "win": 42, "worst_day": -75.35}
-    TEST  {"trades": 105, "per_day": -8.42, "before_fees_per_day": -6.59, "win": 41, "worst_day": -72.07}
-  {"at": 1000, "k": 3, "min_rs": 0.005, "short": false, "exit": "close", "lev": 10, "fee": 0.35, "stop_atr": 1.5}
-    TRAIN {"trades": 212, "per_day": 3.06, "before_fees_per_day": 4.87, "win": 41, "worst_day": -75.35}
-    TEST  {"trades": 100, "per_day": -4.95, "before_fees_per_day": -3.21, "win": 43, "worst_day": -72.07}
-  settings positive on TRAIN: 56 of 384
+== C RS  (fee USD 1.00 per order) ==
+  traded 9 of 9 test months, 332 trades, total EUR -870.09 (before fees EUR -292.70), EUR -4.70 per traded day, win 41%
+    2026-03  EUR   -60.45   19 trades  {"at": 1030, "k": 1, "min_rs": 0.015, "short": false, "exit": "2R", "regime": false, "lev": 10, "stop_atr": 3.0, "fee": 1.0}
+    2026-04  EUR   -61.36   19 trades  {"at": 1000, "k": 1, "min_rs": 0.015, "short": true, "exit": "2R", "regime": true, "lev": 10, "stop_atr": 1.5, "fee": 1.0}
+    2026-05  EUR   242.67   19 trades  {"at": 1000, "k": 1, "min_rs": 0.015, "short": false, "exit": "close", "regime": false, "lev": 10, "stop_atr": 3.0, "fee": 1.0}
+    2026-06  EUR  -258.61   60 trades  {"at": 1000, "k": 3, "min_rs": 0.015, "short": false, "exit": "close", "regime": false, "lev": 10, "stop_atr": 3.0, "fee": 1.0}
+    2026-07  EUR  -367.26   58 trades  {"at": 1000, "k": 3, "min_rs": 0.015, "short": false, "exit": "close", "regime": false, "lev": 10, "stop_atr": 3.0, "fee": 1.0}
+    2026-08  EUR   -34.73   42 trades  {"at": 1000, "k": 3, "min_rs": 0.015, "short": false, "exit": "2R", "regime": true, "lev": 10, "stop_atr": 3.0, "fee": 1.0}
+    2026-09  EUR   -20.49   21 trades  {"at": 1030, "k": 1, "min_rs": 0.015, "short": false, "exit": "2R", "regime": false, "lev": 10, "stop_atr": 3.0, "fee": 1.0}
+    2026-10  EUR   -81.85   59 trades  {"at": 1000, "k": 3, "min_rs": 0.015, "short": false, "exit": "close", "regime": false, "lev": 10, "stop_atr": 1.5, "fee": 1.0}
+    2026-11  EUR  -228.01   35 trades  {"at": 1030, "k": 3, "min_rs": 0.015, "short": false, "exit": "2R", "regime": false, "lev": 10, "stop_atr": 3.0, "fee": 1.0}
 
-== D MEANREV  (96 settings tried) ==
-  {"dev": 1.5, "trend": true, "exit": "close", "lev": 10, "fee": 0.35, "stop_atr": 3.0}
-    TRAIN {"trades": 233, "per_day": 0.56, "before_fees_per_day": 2.55, "win": 47, "worst_day": -79.79}
-    TEST  {"trades": 89, "per_day": -9.02, "before_fees_per_day": -7.47, "win": 34, "worst_day": -65.97}
-  {"dev": 1.5, "trend": false, "exit": "close", "lev": 10, "fee": 0.35, "stop_atr": 3.0}
-    TRAIN {"trades": 243, "per_day": -0.4, "before_fees_per_day": 1.68, "win": 49, "worst_day": -93.23}
-    TEST  {"trades": 113, "per_day": -15.89, "before_fees_per_day": -13.93, "win": 35, "worst_day": -95.76}
-  {"dev": 1.5, "trend": true, "exit": "vwap", "lev": 10, "fee": 0.35, "stop_atr": 3.0}
-    TRAIN {"trades": 327, "per_day": -0.44, "before_fees_per_day": 2.37, "win": 62, "worst_day": -79.79}
-    TEST  {"trades": 112, "per_day": -7.79, "before_fees_per_day": -5.84, "win": 50, "worst_day": -65.97}
-  settings positive on TRAIN: 1 of 96
+== D MEANREV  (fee USD 1.00 per order) ==
+  traded 2 of 9 test months, 69 trades, total EUR -208.90 (before fees EUR -88.90), EUR -5.65 per traded day, win 42%
+    2026-03  sat out
+    2026-04  sat out
+    2026-05  sat out
+    2026-06  sat out
+    2026-07  EUR  -208.90   69 trades  {"dev": 1.5, "trend": true, "exit": "close", "regime": false, "lev": 10, "stop_atr": 3.0, "fee": 1.0}
+    2026-08  sat out
+    2026-09  sat out
+    2026-10  sat out
+    2026-11  EUR     0.00    0 trades  {"dev": 1.5, "trend": false, "exit": "close", "regime": true, "lev": 10, "stop_atr": 1.5, "fee": 1.0}
 
-== E LASTHOUR  (32 settings tried) ==
-  {"mkt_move": 0.008, "k": 1, "exit": "close", "lev": 10, "fee": 0.35, "stop_atr": 3.0}
-    TRAIN {"trades": 20, "per_day": 0.41, "before_fees_per_day": 0.58, "win": 40, "worst_day": -13.86}
-    TEST  {"trades": 18, "per_day": -0.37, "before_fees_per_day": -0.06, "win": 44, "worst_day": -23.13}
-  {"mkt_move": 0.008, "k": 1, "exit": "close", "lev": 5, "fee": 0.35, "stop_atr": 3.0}
-    TRAIN {"trades": 20, "per_day": 0.12, "before_fees_per_day": 0.29, "win": 40, "worst_day": -7.23}
-    TEST  {"trades": 18, "per_day": -0.34, "before_fees_per_day": -0.03, "win": 44, "worst_day": -11.87}
-  {"mkt_move": 0.008, "k": 1, "exit": "close", "lev": 10, "fee": 1.0, "stop_atr": 3.0}
-    TRAIN {"trades": 20, "per_day": 0.09, "before_fees_per_day": 0.58, "win": 40, "worst_day": -14.99}
-    TEST  {"trades": 18, "per_day": -0.96, "before_fees_per_day": -0.06, "win": 39, "worst_day": -24.26}
-  settings positive on TRAIN: 3 of 32
+== A ORB30  (fee USD 0.35 per order) ==
+  traded 7 of 9 test months, 289 trades, total EUR -638.00 (before fees EUR -462.08), EUR -4.49 per traded day, win 37%
+    2026-03  sat out
+    2026-04  sat out
+    2026-05  EUR   189.79   50 trades  {"range_bars": 6, "volx": 1.8, "stop": "far", "short": true, "exit": "2R", "regime": true, "lev": 10, "stop_atr": 3.0, "fee": 0.35}
+    2026-06  EUR  -394.51   45 trades  {"range_bars": 6, "volx": 1.2, "stop": "far", "short": false, "exit": "2R", "regime": false, "lev": 10, "stop_atr": 3.0, "fee": 0.35}
+    2026-07  EUR  -299.32   35 trades  {"range_bars": 6, "volx": 1.8, "stop": "mid", "short": true, "exit": "close", "regime": true, "lev": 10, "stop_atr": 1.5, "fee": 0.35}
+    2026-08  EUR   -77.03   39 trades  {"range_bars": 6, "volx": 1.8, "stop": "mid", "short": false, "exit": "close", "regime": true, "lev": 10, "stop_atr": 1.5, "fee": 0.35}
+    2026-09  EUR   -66.10   52 trades  {"range_bars": 6, "volx": 1.8, "stop": "mid", "short": false, "exit": "2R", "regime": false, "lev": 10, "stop_atr": 1.5, "fee": 0.35}
+    2026-10  EUR    -3.83   40 trades  {"range_bars": 6, "volx": 1.8, "stop": "mid", "short": false, "exit": "2R", "regime": false, "lev": 10, "stop_atr": 1.5, "fee": 0.35}
+    2026-11  EUR    12.99   28 trades  {"range_bars": 6, "volx": 1.8, "stop": "far", "short": false, "exit": "2R", "regime": false, "lev": 10, "stop_atr": 1.5, "fee": 0.35}
 
-== Positive on BOTH train and test (top 3 of each type) ==
-  A ORB30 {"range_bars": 6, "volx": 1.8, "stop": "far", "short": false, "exit": "2R", "lev": 10, "fee": 0.35, "stop_atr": 1.5} -> TRAIN 0.15/day, TEST 1.25/day, 64 test trades
+== B GAP  (fee USD 0.35 per order) ==
+  traded 8 of 9 test months, 227 trades, total EUR -119.07 (before fees EUR 19.10), EUR -0.72 per traded day, win 37%
+    2026-03  EUR  -123.70   17 trades  {"gap": 0.04, "mode": "go", "exit": "2R", "regime": false, "lev": 10, "stop_atr": 3.0, "fee": 0.35}
+    2026-04  EUR   -72.62   16 trades  {"gap": 0.02, "mode": "fade", "exit": "2R", "regime": true, "lev": 10, "stop_atr": 1.5, "fee": 0.35}
+    2026-05  sat out
+    2026-06  EUR    71.11   18 trades  {"gap": 0.02, "mode": "go", "exit": "close", "regime": true, "lev": 10, "stop_atr": 1.5, "fee": 0.35}
+    2026-07  EUR  -123.96   54 trades  {"gap": 0.02, "mode": "go", "exit": "2R", "regime": false, "lev": 10, "stop_atr": 1.5, "fee": 0.35}
+    2026-08  EUR   133.57   19 trades  {"gap": 0.02, "mode": "go", "exit": "close", "regime": true, "lev": 10, "stop_atr": 1.5, "fee": 0.35}
+    2026-09  EUR   157.94   44 trades  {"gap": 0.02, "mode": "go", "exit": "close", "regime": false, "lev": 10, "stop_atr": 1.5, "fee": 0.35}
+    2026-10  EUR  -276.44   42 trades  {"gap": 0.02, "mode": "fade", "exit": "2R", "regime": false, "lev": 10, "stop_atr": 3.0, "fee": 0.35}
+    2026-11  EUR   115.02   17 trades  {"gap": 0.04, "mode": "go", "exit": "2R", "regime": false, "lev": 10, "stop_atr": 3.0, "fee": 0.35}
+
+== C RS  (fee USD 0.35 per order) ==
+  traded 9 of 9 test months, 429 trades, total EUR -122.35 (before fees EUR 138.78), EUR -0.66 per traded day, win 44%
+    2026-03  EUR   -90.01   66 trades  {"at": 1000, "k": 3, "min_rs": 0.005, "short": true, "exit": "2R", "regime": false, "lev": 10, "stop_atr": 1.5, "fee": 0.35}
+    2026-04  EUR   -21.74   38 trades  {"at": 1000, "k": 1, "min_rs": 0.015, "short": true, "exit": "2R", "regime": false, "lev": 10, "stop_atr": 1.5, "fee": 0.35}
+    2026-05  EUR   669.48   50 trades  {"at": 1000, "k": 3, "min_rs": 0.015, "short": false, "exit": "close", "regime": false, "lev": 10, "stop_atr": 3.0, "fee": 0.35}
+    2026-06  EUR  -190.79   60 trades  {"at": 1000, "k": 3, "min_rs": 0.015, "short": false, "exit": "close", "regime": false, "lev": 10, "stop_atr": 3.0, "fee": 0.35}
+    2026-07  EUR  -301.69   58 trades  {"at": 1000, "k": 3, "min_rs": 0.015, "short": false, "exit": "close", "regime": false, "lev": 10, "stop_atr": 3.0, "fee": 0.35}
+    2026-08  EUR    12.75   42 trades  {"at": 1000, "k": 3, "min_rs": 0.015, "short": false, "exit": "2R", "regime": true, "lev": 10, "stop_atr": 3.0, "fee": 0.35}
+    2026-09  EUR     3.25   21 trades  {"at": 1030, "k": 1, "min_rs": 0.015, "short": false, "exit": "2R", "regime": false, "lev": 10, "stop_atr": 3.0, "fee": 0.35}
+    2026-10  EUR   -15.15   59 trades  {"at": 1000, "k": 3, "min_rs": 0.015, "short": false, "exit": "close", "regime": false, "lev": 10, "stop_atr": 1.5, "fee": 0.35}
+    2026-11  EUR  -188.44   35 trades  {"at": 1030, "k": 3, "min_rs": 0.015, "short": false, "exit": "2R", "regime": false, "lev": 10, "stop_atr": 3.0, "fee": 0.35}
+
+== D MEANREV  (fee USD 0.35 per order) ==
+  traded 6 of 9 test months, 297 trades, total EUR -307.87 (before fees EUR -127.09), EUR -2.52 per traded day, win 47%
+    2026-03  sat out
+    2026-04  sat out
+    2026-05  sat out
+    2026-06  EUR   -24.94   36 trades  {"dev": 1.5, "trend": true, "exit": "close", "regime": true, "lev": 10, "stop_atr": 3.0, "fee": 0.35}
+    2026-07  EUR  -130.90   69 trades  {"dev": 1.5, "trend": true, "exit": "close", "regime": false, "lev": 10, "stop_atr": 3.0, "fee": 0.35}
+    2026-08  EUR    22.67   76 trades  {"dev": 1.5, "trend": true, "exit": "close", "regime": false, "lev": 10, "stop_atr": 3.0, "fee": 0.35}
+    2026-09  EUR   -51.80   67 trades  {"dev": 1.5, "trend": true, "exit": "close", "regime": false, "lev": 10, "stop_atr": 3.0, "fee": 0.35}
+    2026-10  EUR  -122.91   49 trades  {"dev": 1.5, "trend": true, "exit": "vwap", "regime": true, "lev": 10, "stop_atr": 3.0, "fee": 0.35}
+    2026-11  EUR     0.00    0 trades  {"dev": 1.5, "trend": false, "exit": "close", "regime": true, "lev": 10, "stop_atr": 1.5, "fee": 0.35}
+
