@@ -1,0 +1,29 @@
+Day-Trader backtest  (2026-11-21)
+stocks: 30 with data, market filter: QQQ, data feed: sip
+TRAIN 2026-06-24 to 2026-10-02 (71 days)   TEST 2026-10-05 to 2026-11-20 (35 days)
+EUR 100 per trade, fee USD 1.00 per order, max 3 open, max 6 trades a day, day stop -EUR 40
+
+== Our default settings ==
+lev x10, start 1030, trend True, market True, setups dip/vwd/bd, move stop at fees+EUR3, trail EUR5, start stop 1.5 ATR
+  TRAIN {"trades": 388, "eur": -874.88, "per_day": -12.32, "win": 43, "avg_win": 4.84, "avg_loss": -7.56, "worst_day": -72.26, "green_days": 18, "red_days": 51}
+  TEST  {"trades": 198, "eur": -366.12, "per_day": -10.46, "win": 46, "avg_win": 5.72, "avg_loss": -8.42, "worst_day": -65.03, "green_days": 9, "red_days": 26}
+
+== Top 5 settings on TRAIN, and how they did on unseen TEST days ==
+lev x10, start 1030, trend True, market False, setups dip, move stop at fees+EUR3, trail EUR8, start stop 2.5 ATR
+  TRAIN {"trades": 231, "eur": -202.25, "per_day": -2.85, "win": 42, "avg_win": 7.97, "avg_loss": -7.28, "worst_day": -67.59, "green_days": 24, "red_days": 42}
+  TEST  {"trades": 99, "eur": -297.0, "per_day": -8.49, "win": 35, "avg_win": 7.01, "avg_loss": -8.47, "worst_day": -44.39, "green_days": 10, "red_days": 23}
+lev x10, start 1030, trend False, market False, setups dip, move stop at fees+EUR3, trail EUR8, start stop 2.5 ATR
+  TRAIN {"trades": 231, "eur": -202.25, "per_day": -2.85, "win": 42, "avg_win": 7.97, "avg_loss": -7.28, "worst_day": -67.59, "green_days": 24, "red_days": 42}
+  TEST  {"trades": 99, "eur": -297.0, "per_day": -8.49, "win": 35, "avg_win": 7.01, "avg_loss": -8.47, "worst_day": -44.39, "green_days": 10, "red_days": 23}
+lev x10, start 1030, trend True, market False, setups dip, move stop at fees+EUR5, trail EUR8, start stop 2.5 ATR
+  TRAIN {"trades": 225, "eur": -264.0, "per_day": -3.72, "win": 44, "avg_win": 7.87, "avg_loss": -8.15, "worst_day": -72.41, "green_days": 23, "red_days": 43}
+  TEST  {"trades": 96, "eur": -285.31, "per_day": -8.15, "win": 38, "avg_win": 7.17, "avg_loss": -9.06, "worst_day": -44.39, "green_days": 11, "red_days": 22}
+lev x10, start 1030, trend False, market False, setups dip, move stop at fees+EUR5, trail EUR8, start stop 2.5 ATR
+  TRAIN {"trades": 225, "eur": -264.0, "per_day": -3.72, "win": 44, "avg_win": 7.87, "avg_loss": -8.15, "worst_day": -72.41, "green_days": 23, "red_days": 43}
+  TEST  {"trades": 96, "eur": -285.31, "per_day": -8.15, "win": 38, "avg_win": 7.17, "avg_loss": -9.06, "worst_day": -44.39, "green_days": 11, "red_days": 22}
+lev x5, start 1030, trend True, market False, setups dip, move stop at fees+EUR5, trail EUR8, start stop 2.5 ATR
+  TRAIN {"trades": 196, "eur": -303.36, "per_day": -4.27, "win": 34, "avg_win": 5.14, "avg_loss": -5.02, "worst_day": -47.53, "green_days": 19, "red_days": 47}
+  TEST  {"trades": 96, "eur": -248.73, "per_day": -7.11, "win": 29, "avg_win": 4.02, "avg_loss": -5.32, "worst_day": -37.19, "green_days": 7, "red_days": 26}
+
+== TEST results of the #1 setting, per setup ==
+  dip buy          trades  99  EUR  -297.00  wins 35
