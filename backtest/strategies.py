@@ -53,9 +53,10 @@ def fam_orb(day, p):
             if b["v"] < p["volx"] * P["slot"][j]:
                 continue
             mk = (M["bars"][j]["c"] - M["vw"][j]) if M else 0
-            if b["c"] > hi * 1.001 and bars[j - 1]["c"] <= hi * 1.001 and mk >= 0 and b["c"] > P["vw"][j]:
+            mt = M["trend"] if (M and p["regime"]) else 0
+            if b["c"] > hi * 1.001 and bars[j - 1]["c"] <= hi * 1.001 and mk >= 0 and mt >= 0 and b["c"] > P["vw"][j]:
                 out.append((j, sym, 1, (hi + lo) / 2 if p["stop"] == "mid" else lo, "orb long")); break
-            if p["short"] and b["c"] < lo * 0.999 and bars[j - 1]["c"] >= lo * 0.999 and mk <= 0 and b["c"] < P["vw"][j]:
+            if p["short"] and b["c"] < lo * 0.999 and bars[j - 1]["c"] >= lo * 0.999 and mk <= 0 and mt <= 0 and b["c"] < P["vw"][j]:
                 out.append((j, sym, -1, (hi + lo) / 2 if p["stop"] == "mid" else hi, "orb short")); break
     return out
 
@@ -77,6 +78,8 @@ def fam_gap(day, p):
             side = -side_gap
         else:
             continue
+        if p["regime"] and day["M"] and side != day["M"]["trend"]:
+            continue                                   # only trade with the market's 20-day direction
         lo = min(b["l"] for b in bars[:3]); hi = max(b["h"] for b in bars[:3])
         out.append((j, sym, side, lo if side > 0 else hi, "gap " + p["mode"]))
     return out
@@ -95,11 +98,12 @@ def fam_rs(day, p):
             scores.append((r, sym))
     scores.sort(reverse=True)
     out = []
-    for r, sym in scores[:p["k"]]:
+    mt = M["trend"] if p["regime"] else 0
+    for r, sym in (scores[:p["k"]] if mt >= 0 else []):
         if r >= p["min_rs"]:
             P = day["S"][sym]
             out.append((j, sym, 1, None, "rs long"))
-    if p["short"]:
+    if p["short"] and mt <= 0:
         weak = []
         for sym, P in day["S"].items():
             r = P["bars"][j]["c"] / P["bars"][0]["o"] - 1 - mret
@@ -117,6 +121,8 @@ def fam_meanrev(day, p):
     M = day["M"]
     for sym, P in day["S"].items():
         if p["trend"] and P["trend"] < 0:
+            continue
+        if p["regime"] and M and M["trend"] < 0:
             continue
         bars = P["bars"]
         for j in range(j_of(1000), j_of(1500)):
@@ -148,14 +154,14 @@ def fam_lasthour(day, p):
 
 FAMILIES = {
     "A ORB30": (fam_orb, dict(range_bars=[6], volx=[1.2, 1.8], stop=["mid", "far"], short=[True, False],
-                              exit=["close", "trail", "2R"])),
-    "B GAP": (fam_gap, dict(gap=[0.02, 0.04], mode=["go", "fade"], exit=["close", "vwap", "trail", "2R"])),
-    "C RS": (fam_rs, dict(at=[1000, 1030, 1100], k=[1, 3], min_rs=[0.005, 0.015], short=[True, False],
-                          exit=["close", "trail"])),
-    "D MEANREV": (fam_meanrev, dict(dev=[1.5, 2.5, 3.5], trend=[True, False], exit=["vwap", "close"])),
-    "E LASTHOUR": (fam_lasthour, dict(mkt_move=[0.003, 0.008], k=[1, 3], exit=["close"])),
+                              exit=["close", "2R"], regime=[True, False])),
+    "B GAP": (fam_gap, dict(gap=[0.02, 0.04], mode=["go", "fade"], exit=["close", "2R"], regime=[True, False])),
+    "C RS": (fam_rs, dict(at=[1000, 1030], k=[1, 3], min_rs=[0.005, 0.015], short=[True, False],
+                          exit=["close", "2R"], regime=[True, False])),
+    "D MEANREV": (fam_meanrev, dict(dev=[1.5, 2.5], trend=[True, False], exit=["vwap", "close"], regime=[True, False])),
 }
-COMMON = dict(lev=[5, 10], fee=[1.0, 0.35], stop_atr=[1.5, 3.0])
+COMMON = dict(lev=[10], stop_atr=[1.5, 3.0])
+FEES = [1.0, 0.35]   # USD per order: normal, low-fee broker
 
 
 # ---------------------------------------------------------------- simulate one setting over some days
@@ -238,6 +244,31 @@ def build_days(all_days, mdays, dates):
     return [(d, dict(S=byd[d], M=mprep.get(d))) for d in sorted(byd)]
 
 
+def walk_forward(fam, grid, days):
+    """Each month: pick the best setting on the 3 months before it, then trade that month with it."""
+    months = sorted(set((d.year, d.month) for d, _ in days))
+    ks = list(grid); combos = [dict(zip(ks, c)) for c in itertools.product(*grid.values())]
+    oos, picks = [], []
+    for i in range(3, len(months)):
+        tr_days = [x for x in days if (x[0].year, x[0].month) in months[i - 3:i]]
+        te_days = [x for x in days if (x[0].year, x[0].month) == months[i]]
+        best, best_tot = None, None
+        for p in combos:
+            t = simulate(fam, p, tr_days)
+            if len(t) < 10:
+                continue
+            tot = sum(x["eur"] for x in t)
+            if best_tot is None or tot > best_tot:
+                best, best_tot = p, tot
+        if best is None or best_tot <= 0:
+            picks.append((months[i], None, 0.0, 0))      # nothing worked before: the bot sits out
+            continue
+        t = simulate(fam, best, te_days)
+        oos += t
+        picks.append((months[i], best, sum(x["eur"] for x in t), len(t)))
+    return oos, picks
+
+
 def main():
     offline = "--offline" in sys.argv
     keys = None if offline else base.load_keys()
@@ -257,47 +288,28 @@ def main():
     mdays = all_days.pop(base.MARKET, {})
     dates = sorted(set(d for v in all_days.values() for d in v) | set(mdays))
     days = build_days(all_days, mdays, dates)
-    cut = int(len(days) * (1 - base.TEST_SHARE))
-    train, test = days[:cut], days[cut:]
     lines = []
 
     def say(s=""):
         print(s, flush=True); lines.append(s)
 
-    say("Strategy types test: %d stocks, TRAIN %s..%s (%d days), TEST %s..%s (%d days)" % (
-        len(all_days), train[0][0], train[-1][0], len(train), test[0][0], test[-1][0], len(test)))
-    say("EUR %.0f per trade; fee 1.00 = USD 1 per order, 0.35 = low-fee broker. Only TEST counts.\n" % STAKE)
-    both_positive = []
-    for name, (fam, grid) in FAMILIES.items():
-        g = dict(grid); g.update(COMMON)
-        ks = list(g)
-        res = []
-        for combo in itertools.product(*g.values()):
-            p = dict(zip(ks, combo))
-            tr = simulate(fam, p, train)
-            if len(tr) < 10:
-                continue
-            res.append((sum(t["eur"] for t in tr), p))
-        res.sort(key=lambda x: -x[0])
-        say("== %s  (%d settings tried) ==" % (name, len(res)))
-        for tot, p in res[:3]:
-            a = summ(simulate(fam, p, train), len(train)); b = summ(simulate(fam, p, test), len(test))
-            say("  %s" % json.dumps(p))
-            say("    TRAIN %s" % json.dumps(a))
-            say("    TEST  %s" % json.dumps(b))
-            if a["per_day"] > 0 and b["per_day"] > 0:
-                both_positive.append((b["per_day"], name, p, a, b))
-        npos = 0
-        for tot, p in res:
-            if tot > 0:
-                npos += 1
-        say("  settings positive on TRAIN: %d of %d" % (npos, len(res)))
+    say("Walk-forward test: %d stocks, %s..%s (%d days). EUR %.0f per trade, x10." % (
+        len(all_days), days[0][0], days[-1][0], len(days), STAKE))
+    say("Each month the bot uses only the settings that did best in the 3 months before it.")
+    say("If nothing made money in those 3 months, it sits the month out. Only these results count.\n")
+    for fee, (name, (fam, grid)) in itertools.product(FEES, FAMILIES.items()):
+        g = dict(grid); g.update(COMMON); g["fee"] = [fee]
+        oos, picks = walk_forward(fam, g, days)
+        traded_days = sorted(set(d for (y, m), p, e, n in picks if p for d, _ in days if (d.year, d.month) == (y, m)))
+        nd = max(1, len(traded_days))
+        tot = sum(t["eur"] for t in oos); gross = sum(t["gross"] for t in oos)
+        say("== %s  (fee USD %.2f per order) ==" % (name, fee))
+        say("  traded %d of %d test months, %d trades, total EUR %.2f (before fees EUR %.2f), EUR %.2f per traded day, win %d%%" % (
+            sum(1 for x in picks if x[1]), len(picks), len(oos), tot, gross, tot / nd,
+            round(100 * sum(1 for t in oos if t["eur"] > 0) / max(1, len(oos)))))
+        for (y, m), p, e, n in picks:
+            say("    %d-%02d  %s" % (y, m, ("EUR %8.2f  %3d trades  %s" % (e, n, json.dumps(p))) if p else "sat out"))
         say()
-    say("== Positive on BOTH train and test (top 3 of each type) ==")
-    if not both_positive:
-        say("  none")
-    for b, name, p, a, t in sorted(both_positive, key=lambda x: -x[0]):
-        say("  %s %s -> TRAIN %.2f/day, TEST %.2f/day, %d test trades" % (name, json.dumps(p), a["per_day"], t["per_day"], t["trades"]))
     with open(os.path.join(base.HERE, "strategies_results.txt"), "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
 

@@ -42,7 +42,7 @@ SYMBOLS = ["TSLA", "NVDA", "AMD", "META", "AMZN", "NFLX", "PLTR", "AVGO", "MU", 
            "UBER", "SHOP", "AAPL", "MSFT", "GOOGL", "ORCL", "CRWD", "SMCI", "MSTR", "HOOD",
            "SNOW", "PANW", "ARM", "INTC", "BA", "DIS", "PYPL", "ABNB", "DASH", "RBLX"]
 MARKET = "QQQ"                 # Nasdaq-100 fund, used as the market filter
-MONTHS_BACK = 6                # how much history to download
+MONTHS_BACK = 12               # how much history to download
 TEST_SHARE = 0.33              # newest third of the days = TEST (never used for tuning)
 
 STAKE_EUR = 100.0              # money per trade
