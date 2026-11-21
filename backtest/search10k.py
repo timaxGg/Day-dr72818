@@ -375,7 +375,17 @@ def main():
         sys.exit(__doc__)
     c = sys.argv[1]
     if c == "data":
-        load_all(True)
+        from concurrent.futures import ThreadPoolExecutor
+        keys = base.load_keys()
+        syms = base.SYMBOLS + [base.MARKET]
+        def one(sym):
+            try:
+                n = len(base.get_bars(sym, keys)["bars"])
+                print("data %-5s %6d bars" % (sym, n), flush=True)
+            except Exception as e:                       # one bad symbol must not stop the rest
+                print("data %-5s FAILED: %s" % (sym, e), flush=True)
+        with ThreadPoolExecutor(max_workers=3) as ex:
+            list(ex.map(one, syms))
     elif c == "run":
         cmd_run(int(sys.argv[2]), int(sys.argv[3]))
     elif c == "merge":

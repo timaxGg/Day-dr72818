@@ -115,6 +115,7 @@ def fetch(symbol, keys, feed):
                  end=end.strftime("%Y-%m-%dT%H:%M:%SZ"), adjustment="all", feed=feed, limit=10000)
         if token:
             q["page_token"] = token
+        print("   ", symbol, feed, "page", len(bars) // 10000 + 1, flush=True)
         req = urllib.request.Request(BASE + "?" + urllib.parse.urlencode(q),
                                      headers={"APCA-API-KEY-ID": keys[0], "APCA-API-SECRET-KEY": keys[1],
                                               "User-Agent": "daytrader-backtest/1.0"})
@@ -145,7 +146,12 @@ def get_bars(symbol, keys):
         try:
             raw = fetch(symbol, keys, feed)
             if raw:
-                out = dict(feed=feed, bars=[[b["t"], b["o"], b["h"], b["l"], b["c"], b["v"]] for b in raw])
+                keep = []
+                for b in raw:                                   # keep regular hours only (smaller files)
+                    ny = to_ny(dt.datetime.strptime(b["t"][:19], "%Y-%m-%dT%H:%M:%S"))
+                    if 930 <= ny.hour * 100 + ny.minute <= 1555:
+                        keep.append([b["t"], b["o"], b["h"], b["l"], b["c"], b["v"]])
+                out = dict(feed=feed, bars=keep)
                 json.dump(out, open(path, "w"))
                 return out
         except urllib.error.HTTPError as e:
