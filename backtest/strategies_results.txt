@@ -1,0 +1,65 @@
+Strategy types test: 30 stocks, TRAIN 2026-06-24..2026-10-02 (71 days), TEST 2026-10-05..2026-11-20 (35 days)
+EUR 100 per trade; fee 1.00 = USD 1 per order, 0.35 = low-fee broker. Only TEST counts.
+
+== A ORB30  (192 settings tried) ==
+  {"range_bars": 6, "volx": 1.8, "stop": "far", "short": false, "exit": "2R", "lev": 10, "fee": 0.35, "stop_atr": 1.5}
+    TRAIN {"trades": 168, "per_day": 0.15, "before_fees_per_day": 1.59, "win": 38, "worst_day": -54.56}
+    TEST  {"trades": 64, "per_day": 1.25, "before_fees_per_day": 2.36, "win": 41, "worst_day": -49.06}
+  {"range_bars": 6, "volx": 1.8, "stop": "mid", "short": false, "exit": "2R", "lev": 10, "fee": 0.35, "stop_atr": 1.5}
+    TRAIN {"trades": 162, "per_day": 0.05, "before_fees_per_day": 1.44, "win": 39, "worst_day": -52.67}
+    TEST  {"trades": 61, "per_day": -2.48, "before_fees_per_day": -1.42, "win": 38, "worst_day": -64.58}
+  {"range_bars": 6, "volx": 1.8, "stop": "mid", "short": false, "exit": "2R", "lev": 5, "fee": 0.35, "stop_atr": 1.5}
+    TRAIN {"trades": 163, "per_day": -0.68, "before_fees_per_day": 0.72, "win": 39, "worst_day": -27.38}
+    TEST  {"trades": 61, "per_day": -1.77, "before_fees_per_day": -0.71, "win": 36, "worst_day": -32.9}
+  settings positive on TRAIN: 2 of 192
+
+== B GAP  (128 settings tried) ==
+  {"gap": 0.02, "mode": "fade", "exit": "2R", "lev": 10, "fee": 0.35, "stop_atr": 3.0}
+    TRAIN {"trades": 146, "per_day": 7.95, "before_fees_per_day": 9.2, "win": 49, "worst_day": -58.41}
+    TEST  {"trades": 77, "per_day": -12.26, "before_fees_per_day": -10.92, "win": 34, "worst_day": -89.82}
+  {"gap": 0.02, "mode": "fade", "exit": "2R", "lev": 10, "fee": 0.35, "stop_atr": 1.5}
+    TRAIN {"trades": 146, "per_day": 7.4, "before_fees_per_day": 8.66, "win": 48, "worst_day": -64.35}
+    TEST  {"trades": 77, "per_day": -12.78, "before_fees_per_day": -11.44, "win": 32, "worst_day": -89.82}
+  {"gap": 0.02, "mode": "fade", "exit": "close", "lev": 10, "fee": 0.35, "stop_atr": 3.0}
+    TRAIN {"trades": 146, "per_day": 6.27, "before_fees_per_day": 7.53, "win": 45, "worst_day": -58.41}
+    TEST  {"trades": 77, "per_day": -10.88, "before_fees_per_day": -9.54, "win": 31, "worst_day": -89.82}
+  settings positive on TRAIN: 76 of 128
+
+== C RS  (384 settings tried) ==
+  {"at": 1000, "k": 3, "min_rs": 0.015, "short": false, "exit": "close", "lev": 10, "fee": 0.35, "stop_atr": 1.5}
+    TRAIN {"trades": 195, "per_day": 4.24, "before_fees_per_day": 5.92, "win": 42, "worst_day": -75.35}
+    TEST  {"trades": 95, "per_day": -5.85, "before_fees_per_day": -4.2, "win": 42, "worst_day": -72.07}
+  {"at": 1000, "k": 3, "min_rs": 0.015, "short": true, "exit": "close", "lev": 10, "fee": 0.35, "stop_atr": 1.5}
+    TRAIN {"trades": 213, "per_day": 3.77, "before_fees_per_day": 5.6, "win": 42, "worst_day": -75.35}
+    TEST  {"trades": 105, "per_day": -8.42, "before_fees_per_day": -6.59, "win": 41, "worst_day": -72.07}
+  {"at": 1000, "k": 3, "min_rs": 0.005, "short": false, "exit": "close", "lev": 10, "fee": 0.35, "stop_atr": 1.5}
+    TRAIN {"trades": 212, "per_day": 3.06, "before_fees_per_day": 4.87, "win": 41, "worst_day": -75.35}
+    TEST  {"trades": 100, "per_day": -4.95, "before_fees_per_day": -3.21, "win": 43, "worst_day": -72.07}
+  settings positive on TRAIN: 56 of 384
+
+== D MEANREV  (96 settings tried) ==
+  {"dev": 1.5, "trend": true, "exit": "close", "lev": 10, "fee": 0.35, "stop_atr": 3.0}
+    TRAIN {"trades": 233, "per_day": 0.56, "before_fees_per_day": 2.55, "win": 47, "worst_day": -79.79}
+    TEST  {"trades": 89, "per_day": -9.02, "before_fees_per_day": -7.47, "win": 34, "worst_day": -65.97}
+  {"dev": 1.5, "trend": false, "exit": "close", "lev": 10, "fee": 0.35, "stop_atr": 3.0}
+    TRAIN {"trades": 243, "per_day": -0.4, "before_fees_per_day": 1.68, "win": 49, "worst_day": -93.23}
+    TEST  {"trades": 113, "per_day": -15.89, "before_fees_per_day": -13.93, "win": 35, "worst_day": -95.76}
+  {"dev": 1.5, "trend": true, "exit": "vwap", "lev": 10, "fee": 0.35, "stop_atr": 3.0}
+    TRAIN {"trades": 327, "per_day": -0.44, "before_fees_per_day": 2.37, "win": 62, "worst_day": -79.79}
+    TEST  {"trades": 112, "per_day": -7.79, "before_fees_per_day": -5.84, "win": 50, "worst_day": -65.97}
+  settings positive on TRAIN: 1 of 96
+
+== E LASTHOUR  (32 settings tried) ==
+  {"mkt_move": 0.008, "k": 1, "exit": "close", "lev": 10, "fee": 0.35, "stop_atr": 3.0}
+    TRAIN {"trades": 20, "per_day": 0.41, "before_fees_per_day": 0.58, "win": 40, "worst_day": -13.86}
+    TEST  {"trades": 18, "per_day": -0.37, "before_fees_per_day": -0.06, "win": 44, "worst_day": -23.13}
+  {"mkt_move": 0.008, "k": 1, "exit": "close", "lev": 5, "fee": 0.35, "stop_atr": 3.0}
+    TRAIN {"trades": 20, "per_day": 0.12, "before_fees_per_day": 0.29, "win": 40, "worst_day": -7.23}
+    TEST  {"trades": 18, "per_day": -0.34, "before_fees_per_day": -0.03, "win": 44, "worst_day": -11.87}
+  {"mkt_move": 0.008, "k": 1, "exit": "close", "lev": 10, "fee": 1.0, "stop_atr": 3.0}
+    TRAIN {"trades": 20, "per_day": 0.09, "before_fees_per_day": 0.58, "win": 40, "worst_day": -14.99}
+    TEST  {"trades": 18, "per_day": -0.96, "before_fees_per_day": -0.06, "win": 39, "worst_day": -24.26}
+  settings positive on TRAIN: 3 of 32
+
+== Positive on BOTH train and test (top 3 of each type) ==
+  A ORB30 {"range_bars": 6, "volx": 1.8, "stop": "far", "short": false, "exit": "2R", "lev": 10, "fee": 0.35, "stop_atr": 1.5} -> TRAIN 0.15/day, TEST 1.25/day, 64 test trades
