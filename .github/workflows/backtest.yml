@@ -14,7 +14,7 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -29,18 +29,18 @@ jobs:
             echo "Add the secrets ALPACA_API_KEY and ALPACA_SECRET_KEY first (Settings > Secrets and variables > Actions)."
             exit 1
           fi
-          cd backtest && python daytrader_backtest.py
+          cd backtest && python strategies.py
       - name: Show the results on the run page
         if: always()
         run: |
-          if [ -f backtest/results.txt ]; then
-            { echo '```'; cat backtest/results.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          if [ -f backtest/strategies_results.txt ]; then
+            { echo '```'; cat backtest/strategies_results.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           fi
       - name: Save the results in the repo
         if: success()
         run: |
           git config user.name "backtest-bot"
           git config user.email "backtest-bot@users.noreply.github.com"
-          git add backtest/results.txt backtest/test_trades.csv
+          git add backtest/strategies_results.txt
           git commit -m "Backtest results [skip ci]" || exit 0
           git push
