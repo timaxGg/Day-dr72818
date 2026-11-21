@@ -3,8 +3,6 @@
 # Needs the repo secrets ALPACA_API_KEY and ALPACA_SECRET_KEY (paper-trading keys are enough).
 name: Backtest
 on:
-  push:
-    branches: [backtest]
   workflow_dispatch: {}
 permissions:
   contents: write

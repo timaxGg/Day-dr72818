@@ -1,0 +1,64 @@
+# 10,000-method search: downloads the data once, replays the methods in 10 parallel jobs,
+# then picks methods month by month (walk-forward) and saves backtest/search_results.txt.
+name: Search
+on:
+  push:
+    branches: [backtest]
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency:
+  group: search
+  cancel-in-progress: true
+jobs:
+  data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Download data
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+        run: cd backtest && python search10k.py data
+      - uses: actions/upload-artifact@v4
+        with: { name: data, path: backtest/data, retention-days: 3 }
+  search:
+    needs: data
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      matrix: { part: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/download-artifact@v4
+        with: { name: data, path: backtest/data }
+      - run: cd backtest && python search10k.py run ${{ matrix.part }} 10
+      - uses: actions/upload-artifact@v4
+        with: { name: "part${{ matrix.part }}", path: backtest/parts, retention-days: 3 }
+  merge:
+    needs: search
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/download-artifact@v4
+        with: { name: data, path: backtest/data }
+      - uses: actions/download-artifact@v4
+        with: { pattern: "part*", path: backtest/parts, merge-multiple: true }
+      - run: cd backtest && python search10k.py merge
+      - name: Show the results on the run page
+        run: '{ echo "```"; cat backtest/search_results.txt; echo "```"; } >> "$GITHUB_STEP_SUMMARY"'
+      - name: Save the results in the repo
+        run: |
+          git config user.name "backtest-bot"
+          git config user.email "backtest-bot@users.noreply.github.com"
+          git add backtest/search_results.txt
+          git commit -m "Search results [skip ci]" || exit 0
+          git pull --rebase && git push
