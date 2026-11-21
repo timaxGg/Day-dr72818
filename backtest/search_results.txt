@@ -1,101 +1,101 @@
-10,000-method search: 10000 methods replayed, 30 stocks, 2025-12-22..2026-11-20 (231 trading days)
+10,000-method search: 10000 methods replayed, 153 stocks, 2025-12-22..2026-11-20 (231 trading days)
 EUR 100 per trade. Same-day trades up to x10, multi-day trades up to x3 (overnight gaps).
 
 =================  fee USD 1.00 per order  =================
 In hindsight (whole year, the kind of number that fools people):
-  methods with a profit: 703 of 10000; best one: EUR 666 = EUR 2.98 per day
+  methods with a profit: 573 of 10000; best one: EUR 747 = EUR 3.34 per day
 
 Walk-forward, the bot uses the 1 best methods of the previous 3 months each month:
-  2026-04  EUR    22.34   (EUR   1.06/day)   top pick: gap hold=0, lev=10, start=1100, regime=0, mkt_now=1, vwap_side=0, volx=1.2, stop_atr=3.0, target_r=2, trail=0, short=1, max_open=3, max_new=6, gap=0.05, mode=go
-  2026-05  EUR   127.35   (EUR   6.37/day)   top pick: gap hold=0, lev=10, start=1100, regime=0, mkt_now=1, vwap_side=0, volx=1.2, stop_atr=3.0, target_r=2, trail=0, short=1, max_open=3, max_new=6, gap=0.05, mode=go
-  2026-06  EUR   -73.26   (EUR  -3.49/day)   top pick: swing_mom hold=5, lev=3, start=1030, regime=1, mkt_now=0, vwap_side=0, volx=0, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=6, look=ret20, k=3, at=1000
-  2026-07  EUR  -117.37   (EUR  -5.34/day)   top pick: swing_mom hold=5, lev=3, start=1030, regime=1, mkt_now=0, vwap_side=0, volx=0, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=6, look=ret20, k=3, at=1000
-  2026-08  EUR    82.59   (EUR   3.93/day)   top pick: gap hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=0, volx=0, stop_atr=2.0, target_r=3, trail=0, short=1, max_open=3, max_new=3, gap=0.01, mode=go
-  2026-09  EUR  -109.97   (EUR  -5.24/day)   top pick: gap hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=0, volx=0, stop_atr=2.0, target_r=3, trail=0, short=1, max_open=3, max_new=3, gap=0.01, mode=go
-  2026-10  EUR  -148.89   (EUR  -6.77/day)   top pick: mom_open hold=0, lev=10, start=1000, regime=0, mkt_now=0, vwap_side=0, volx=1.2, stop_atr=1.5, target_r=2, trail=1, short=1, max_open=3, max_new=3, at=1000, move=0.03
-  2026-11  EUR  -117.55   (EUR  -7.84/day)   top pick: rs hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=3, trail=0, short=1, max_open=3, max_new=6, at=1030, k=3, min_rs=0.02
-  TOTAL EUR -334.76 over 163 days = EUR -2.05 per day
+  2026-04  EUR   171.83   (EUR   8.18/day)   top pick: mom_open hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=0, trail=0, short=0, max_open=3, max_new=1, at=1000, move=0.02
+  2026-05  EUR   170.84   (EUR   8.54/day)   top pick: mom_open hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=1, volx=1.5, stop_atr=3.0, target_r=1.5, trail=0, short=0, max_open=3, max_new=1, at=1000, move=0.01
+  2026-06  EUR  -105.64   (EUR  -5.03/day)   top pick: rs hold=0, lev=10, start=1000, regime=1, mkt_now=1, vwap_side=1, volx=0, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=6, at=1000, k=5, min_rs=0.02
+  2026-07  EUR    40.75   (EUR   1.85/day)   top pick: orb hold=0, lev=10, start=945, regime=0, mkt_now=1, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=1.5, trail=0, short=0, max_open=3, max_new=3, range_bars=3
+  2026-08  EUR   -72.42   (EUR  -3.45/day)   top pick: gap hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=0, volx=2.0, stop_atr=1.5, target_r=0, trail=0, short=0, max_open=3, max_new=3, gap=0.02, mode=fade
+  2026-09  EUR    -8.03   (EUR  -0.38/day)   top pick: mom_open hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=2.0, target_r=0, trail=0, short=1, max_open=1, max_new=1, at=1000, move=0.03
+  2026-10  EUR   -25.91   (EUR  -1.18/day)   top pick: gap hold=0, lev=10, start=1000, regime=0, mkt_now=0, vwap_side=0, volx=2.0, stop_atr=1.0, target_r=0, trail=0, short=0, max_open=3, max_new=3, gap=0.05, mode=go
+  2026-11  EUR  -213.93   (EUR -14.26/day)   top pick: gap hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=1, volx=0, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=3, gap=0.03, mode=go
+  TOTAL EUR -42.53 over 163 days = EUR -0.26 per day
 
 Walk-forward, the bot uses the 5 best methods of the previous 3 months each month:
-  2026-04  EUR   -19.99   (EUR  -0.95/day)   top pick: gap hold=0, lev=10, start=1100, regime=0, mkt_now=1, vwap_side=0, volx=1.2, stop_atr=3.0, target_r=2, trail=0, short=1, max_open=3, max_new=6, gap=0.05, mode=go
-  2026-05  EUR    89.64   (EUR   4.48/day)   top pick: gap hold=0, lev=10, start=1100, regime=0, mkt_now=1, vwap_side=0, volx=1.2, stop_atr=3.0, target_r=2, trail=0, short=1, max_open=3, max_new=6, gap=0.05, mode=go
-  2026-06  EUR   -12.04   (EUR  -0.57/day)   top pick: swing_mom hold=5, lev=3, start=1030, regime=1, mkt_now=0, vwap_side=0, volx=0, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=6, look=ret20, k=3, at=1000
-  2026-07  EUR  -196.60   (EUR  -8.94/day)   top pick: swing_mom hold=5, lev=3, start=1030, regime=1, mkt_now=0, vwap_side=0, volx=0, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=6, look=ret20, k=3, at=1000
-  2026-08  EUR    14.24   (EUR   0.68/day)   top pick: gap hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=0, volx=0, stop_atr=2.0, target_r=3, trail=0, short=1, max_open=3, max_new=3, gap=0.01, mode=go
-  2026-09  EUR    45.72   (EUR   2.18/day)   top pick: gap hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=0, volx=0, stop_atr=2.0, target_r=3, trail=0, short=1, max_open=3, max_new=3, gap=0.01, mode=go
-  2026-10  EUR   -68.87   (EUR  -3.13/day)   top pick: mom_open hold=0, lev=10, start=1000, regime=0, mkt_now=0, vwap_side=0, volx=1.2, stop_atr=1.5, target_r=2, trail=1, short=1, max_open=3, max_new=3, at=1000, move=0.03
-  2026-11  EUR   -65.06   (EUR  -4.34/day)   top pick: rs hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=3, trail=0, short=1, max_open=3, max_new=6, at=1030, k=3, min_rs=0.02
-  TOTAL EUR -212.97 over 163 days = EUR -1.31 per day
+  2026-04  EUR   132.20   (EUR   6.30/day)   top pick: mom_open hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=0, trail=0, short=0, max_open=3, max_new=1, at=1000, move=0.02
+  2026-05  EUR   157.36   (EUR   7.87/day)   top pick: mom_open hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=1, volx=1.5, stop_atr=3.0, target_r=1.5, trail=0, short=0, max_open=3, max_new=1, at=1000, move=0.01
+  2026-06  EUR   -35.98   (EUR  -1.71/day)   top pick: rs hold=0, lev=10, start=1000, regime=1, mkt_now=1, vwap_side=1, volx=0, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=6, at=1000, k=5, min_rs=0.02
+  2026-07  EUR  -182.02   (EUR  -8.27/day)   top pick: orb hold=0, lev=10, start=945, regime=0, mkt_now=1, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=1.5, trail=0, short=0, max_open=3, max_new=3, range_bars=3
+  2026-08  EUR   -50.29   (EUR  -2.39/day)   top pick: gap hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=0, volx=2.0, stop_atr=1.5, target_r=0, trail=0, short=0, max_open=3, max_new=3, gap=0.02, mode=fade
+  2026-09  EUR   -27.06   (EUR  -1.29/day)   top pick: mom_open hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=2.0, target_r=0, trail=0, short=1, max_open=1, max_new=1, at=1000, move=0.03
+  2026-10  EUR   -62.46   (EUR  -2.84/day)   top pick: gap hold=0, lev=10, start=1000, regime=0, mkt_now=0, vwap_side=0, volx=2.0, stop_atr=1.0, target_r=0, trail=0, short=0, max_open=3, max_new=3, gap=0.05, mode=go
+  2026-11  EUR   -70.38   (EUR  -4.69/day)   top pick: gap hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=1, volx=0, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=3, gap=0.03, mode=go
+  TOTAL EUR -138.63 over 163 days = EUR -0.85 per day
 
 Walk-forward, the bot uses the 20 best methods of the previous 3 months each month:
-  2026-04  EUR   -22.26   (EUR  -1.06/day)   top pick: gap hold=0, lev=10, start=1100, regime=0, mkt_now=1, vwap_side=0, volx=1.2, stop_atr=3.0, target_r=2, trail=0, short=1, max_open=3, max_new=6, gap=0.05, mode=go
-  2026-05  EUR    98.37   (EUR   4.92/day)   top pick: gap hold=0, lev=10, start=1100, regime=0, mkt_now=1, vwap_side=0, volx=1.2, stop_atr=3.0, target_r=2, trail=0, short=1, max_open=3, max_new=6, gap=0.05, mode=go
-  2026-06  EUR   -61.94   (EUR  -2.95/day)   top pick: swing_mom hold=5, lev=3, start=1030, regime=1, mkt_now=0, vwap_side=0, volx=0, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=6, look=ret20, k=3, at=1000
-  2026-07  EUR  -145.83   (EUR  -6.63/day)   top pick: swing_mom hold=5, lev=3, start=1030, regime=1, mkt_now=0, vwap_side=0, volx=0, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=6, look=ret20, k=3, at=1000
-  2026-08  EUR    25.02   (EUR   1.19/day)   top pick: gap hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=0, volx=0, stop_atr=2.0, target_r=3, trail=0, short=1, max_open=3, max_new=3, gap=0.01, mode=go
-  2026-09  EUR    30.66   (EUR   1.46/day)   top pick: gap hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=0, volx=0, stop_atr=2.0, target_r=3, trail=0, short=1, max_open=3, max_new=3, gap=0.01, mode=go
-  2026-10  EUR   -82.47   (EUR  -3.75/day)   top pick: mom_open hold=0, lev=10, start=1000, regime=0, mkt_now=0, vwap_side=0, volx=1.2, stop_atr=1.5, target_r=2, trail=1, short=1, max_open=3, max_new=3, at=1000, move=0.03
-  2026-11  EUR   -34.61   (EUR  -2.31/day)   top pick: rs hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=3, trail=0, short=1, max_open=3, max_new=6, at=1030, k=3, min_rs=0.02
-  TOTAL EUR -193.06 over 163 days = EUR -1.18 per day
+  2026-04  EUR    40.37   (EUR   1.92/day)   top pick: mom_open hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=0, trail=0, short=0, max_open=3, max_new=1, at=1000, move=0.02
+  2026-05  EUR   115.47   (EUR   5.77/day)   top pick: mom_open hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=1, volx=1.5, stop_atr=3.0, target_r=1.5, trail=0, short=0, max_open=3, max_new=1, at=1000, move=0.01
+  2026-06  EUR   -19.33   (EUR  -0.92/day)   top pick: rs hold=0, lev=10, start=1000, regime=1, mkt_now=1, vwap_side=1, volx=0, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=6, at=1000, k=5, min_rs=0.02
+  2026-07  EUR  -165.69   (EUR  -7.53/day)   top pick: orb hold=0, lev=10, start=945, regime=0, mkt_now=1, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=1.5, trail=0, short=0, max_open=3, max_new=3, range_bars=3
+  2026-08  EUR    70.93   (EUR   3.38/day)   top pick: gap hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=0, volx=2.0, stop_atr=1.5, target_r=0, trail=0, short=0, max_open=3, max_new=3, gap=0.02, mode=fade
+  2026-09  EUR    -8.89   (EUR  -0.42/day)   top pick: mom_open hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=2.0, target_r=0, trail=0, short=1, max_open=1, max_new=1, at=1000, move=0.03
+  2026-10  EUR  -110.05   (EUR  -5.00/day)   top pick: gap hold=0, lev=10, start=1000, regime=0, mkt_now=0, vwap_side=0, volx=2.0, stop_atr=1.0, target_r=0, trail=0, short=0, max_open=3, max_new=3, gap=0.05, mode=go
+  2026-11  EUR   -21.63   (EUR  -1.44/day)   top pick: gap hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=1, volx=0, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=3, gap=0.03, mode=go
+  TOTAL EUR -98.83 over 163 days = EUR -0.61 per day
 
 Top 10 methods in hindsight (NOT proof, shown so you can see what they are):
-  EUR      666  gap hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=1, volx=2.0, stop_atr=3.0, target_r=0, trail=0, short=1, max_open=3, max_new=3, gap=0.02, mode=go
-  EUR      623  mom_open hold=0, lev=10, start=1100, regime=1, mkt_now=0, vwap_side=1, volx=1.5, stop_atr=3.0, target_r=0, trail=0, short=1, max_open=3, max_new=1, at=1030, move=0.02
-  EUR      571  gap hold=0, lev=10, start=1030, regime=1, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=0, trail=0, short=1, max_open=3, max_new=6, gap=0.01, mode=go
-  EUR      474  rs hold=0, lev=10, start=1100, regime=1, mkt_now=0, vwap_side=0, volx=1.2, stop_atr=3.0, target_r=1.5, trail=0, short=0, max_open=1, max_new=6, at=1000, k=5, min_rs=0.02
-  EUR      452  gap hold=0, lev=10, start=945, regime=0, mkt_now=1, vwap_side=1, volx=1.2, stop_atr=1.5, target_r=3, trail=0, short=0, max_open=3, max_new=6, gap=0.05, mode=go
-  EUR      444  rs hold=0, lev=10, start=945, regime=1, mkt_now=0, vwap_side=0, volx=1.2, stop_atr=3.0, target_r=2, trail=0, short=1, max_open=3, max_new=1, at=1000, k=5, min_rs=0.02
-  EUR      439  mom_open hold=2, lev=3, start=945, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=0, trail=0, short=0, max_open=3, max_new=3, at=1030, move=0.03
-  EUR      436  gap hold=0, lev=10, start=1030, regime=0, mkt_now=1, vwap_side=1, volx=1.5, stop_atr=3.0, target_r=3, trail=0, short=0, max_open=3, max_new=6, gap=0.02, mode=go
-  EUR      424  rs hold=0, lev=10, start=1000, regime=1, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=1, max_new=3, at=1000, k=1, min_rs=0.0
-  EUR      397  rs hold=0, lev=10, start=1100, regime=1, mkt_now=0, vwap_side=0, volx=1.2, stop_atr=3.0, target_r=0, trail=0, short=1, max_open=1, max_new=1, at=1030, k=5, min_rs=0.02
+  EUR      747  rs hold=0, lev=10, start=1000, regime=1, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=1, max_new=3, at=1000, k=1, min_rs=0.0
+  EUR      743  mom_open hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=0, volx=2.0, stop_atr=3.0, target_r=0, trail=0, short=0, max_open=1, max_new=1, at=1000, move=0.02
+  EUR      718  mom_open hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=1, volx=2.0, stop_atr=1.5, target_r=0, trail=0, short=0, max_open=1, max_new=6, at=1000, move=0.03
+  EUR      716  mom_open hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=0, trail=0, short=0, max_open=3, max_new=1, at=1000, move=0.02
+  EUR      710  mom_open hold=0, lev=10, start=1000, regime=1, mkt_now=0, vwap_side=1, volx=0, stop_atr=2.0, target_r=2, trail=0, short=0, max_open=3, max_new=6, at=1000, move=0.03
+  EUR      691  mom_open hold=0, lev=10, start=1000, regime=1, mkt_now=0, vwap_side=1, volx=2.0, stop_atr=3.0, target_r=1.5, trail=0, short=0, max_open=1, max_new=6, at=1000, move=0.03
+  EUR      651  mom_open hold=0, lev=10, start=1000, regime=1, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=1, max_new=6, at=1000, move=0.01
+  EUR      624  mom_open hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=2.0, target_r=0, trail=0, short=1, max_open=1, max_new=1, at=1000, move=0.03
+  EUR      610  rs hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=0, volx=1.2, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=1, at=1000, k=5, min_rs=0.005
+  EUR      583  mom_open hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=2.0, target_r=3, trail=0, short=1, max_open=1, max_new=6, at=1000, move=0.02
 
 =================  fee USD 0.35 per order  =================
 In hindsight (whole year, the kind of number that fools people):
-  methods with a profit: 1933 of 10000; best one: EUR 808 = EUR 3.61 per day
+  methods with a profit: 1705 of 10000; best one: EUR 976 = EUR 4.36 per day
 
 Walk-forward, the bot uses the 1 best methods of the previous 3 months each month:
-  2026-04  EUR   -39.35   (EUR  -1.87/day)   top pick: gap hold=0, lev=10, start=1100, regime=0, mkt_now=0, vwap_side=0, volx=1.5, stop_atr=2.0, target_r=3, trail=0, short=1, max_open=3, max_new=6, gap=0.02, mode=go
-  2026-05  EUR    14.41   (EUR   0.72/day)   top pick: rs hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=3, trail=0, short=1, max_open=3, max_new=6, at=1030, k=3, min_rs=0.02
-  2026-06  EUR   -60.83   (EUR  -2.90/day)   top pick: swing_mom hold=5, lev=3, start=1030, regime=1, mkt_now=0, vwap_side=0, volx=0, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=6, look=ret20, k=3, at=1000
-  2026-07  EUR  -107.20   (EUR  -4.87/day)   top pick: swing_mom hold=5, lev=3, start=1030, regime=1, mkt_now=0, vwap_side=0, volx=0, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=6, look=ret20, k=3, at=1000
-  2026-08  EUR   145.89   (EUR   6.95/day)   top pick: gap hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=0, volx=0, stop_atr=2.0, target_r=3, trail=0, short=1, max_open=3, max_new=3, gap=0.01, mode=go
-  2026-09  EUR   -45.54   (EUR  -2.17/day)   top pick: gap hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=0, volx=0, stop_atr=2.0, target_r=3, trail=0, short=1, max_open=3, max_new=3, gap=0.01, mode=go
-  2026-10  EUR  -128.55   (EUR  -5.84/day)   top pick: mom_open hold=0, lev=10, start=1000, regime=0, mkt_now=0, vwap_side=0, volx=1.2, stop_atr=1.5, target_r=2, trail=1, short=1, max_open=3, max_new=3, at=1000, move=0.03
-  2026-11  EUR   -82.51   (EUR  -5.50/day)   top pick: rs hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=3, trail=0, short=1, max_open=3, max_new=6, at=1030, k=3, min_rs=0.02
-  TOTAL EUR -303.66 over 163 days = EUR -1.86 per day
+  2026-04  EUR    23.32   (EUR   1.11/day)   top pick: gap hold=0, lev=10, start=1100, regime=0, mkt_now=1, vwap_side=0, volx=0, stop_atr=3.0, target_r=2, trail=0, short=1, max_open=3, max_new=6, gap=0.01, mode=fade
+  2026-05  EUR   -18.72   (EUR  -0.94/day)   top pick: gap hold=0, lev=10, start=1100, regime=0, mkt_now=1, vwap_side=0, volx=0, stop_atr=3.0, target_r=2, trail=0, short=1, max_open=3, max_new=6, gap=0.01, mode=fade
+  2026-06  EUR   -92.07   (EUR  -4.38/day)   top pick: rs hold=0, lev=10, start=1000, regime=1, mkt_now=1, vwap_side=1, volx=0, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=6, at=1000, k=5, min_rs=0.02
+  2026-07  EUR   113.09   (EUR   5.14/day)   top pick: orb hold=0, lev=10, start=945, regime=0, mkt_now=1, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=1.5, trail=0, short=0, max_open=3, max_new=3, range_bars=3
+  2026-08  EUR   -50.95   (EUR  -2.43/day)   top pick: gap hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=0, volx=2.0, stop_atr=1.5, target_r=0, trail=0, short=0, max_open=3, max_new=3, gap=0.02, mode=fade
+  2026-09  EUR    14.58   (EUR   0.69/day)   top pick: mom_open hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=2.0, target_r=0, trail=0, short=1, max_open=1, max_new=1, at=1000, move=0.03
+  2026-10  EUR   -19.13   (EUR  -0.87/day)   top pick: gap hold=0, lev=10, start=1000, regime=0, mkt_now=0, vwap_side=0, volx=2.0, stop_atr=1.0, target_r=0, trail=0, short=0, max_open=3, max_new=3, gap=0.05, mode=go
+  2026-11  EUR  -189.06   (EUR -12.60/day)   top pick: gap hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=1, volx=0, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=3, gap=0.03, mode=go
+  TOTAL EUR -218.94 over 163 days = EUR -1.34 per day
 
 Walk-forward, the bot uses the 5 best methods of the previous 3 months each month:
-  2026-04  EUR   -30.00   (EUR  -1.43/day)   top pick: gap hold=0, lev=10, start=1100, regime=0, mkt_now=0, vwap_side=0, volx=1.5, stop_atr=2.0, target_r=3, trail=0, short=1, max_open=3, max_new=6, gap=0.02, mode=go
-  2026-05  EUR   123.19   (EUR   6.16/day)   top pick: rs hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=3, trail=0, short=1, max_open=3, max_new=6, at=1030, k=3, min_rs=0.02
-  2026-06  EUR   -69.48   (EUR  -3.31/day)   top pick: swing_mom hold=5, lev=3, start=1030, regime=1, mkt_now=0, vwap_side=0, volx=0, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=6, look=ret20, k=3, at=1000
-  2026-07  EUR  -173.31   (EUR  -7.88/day)   top pick: swing_mom hold=5, lev=3, start=1030, regime=1, mkt_now=0, vwap_side=0, volx=0, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=6, look=ret20, k=3, at=1000
-  2026-08  EUR    16.42   (EUR   0.78/day)   top pick: gap hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=0, volx=0, stop_atr=2.0, target_r=3, trail=0, short=1, max_open=3, max_new=3, gap=0.01, mode=go
-  2026-09  EUR    76.24   (EUR   3.63/day)   top pick: gap hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=0, volx=0, stop_atr=2.0, target_r=3, trail=0, short=1, max_open=3, max_new=3, gap=0.01, mode=go
-  2026-10  EUR   -94.27   (EUR  -4.28/day)   top pick: mom_open hold=0, lev=10, start=1000, regime=0, mkt_now=0, vwap_side=0, volx=1.2, stop_atr=1.5, target_r=2, trail=1, short=1, max_open=3, max_new=3, at=1000, move=0.03
-  2026-11  EUR     9.55   (EUR   0.64/day)   top pick: rs hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=3, trail=0, short=1, max_open=3, max_new=6, at=1030, k=3, min_rs=0.02
-  TOTAL EUR -141.66 over 163 days = EUR -0.87 per day
+  2026-04  EUR   140.92   (EUR   6.71/day)   top pick: gap hold=0, lev=10, start=1100, regime=0, mkt_now=1, vwap_side=0, volx=0, stop_atr=3.0, target_r=2, trail=0, short=1, max_open=3, max_new=6, gap=0.01, mode=fade
+  2026-05  EUR   135.58   (EUR   6.78/day)   top pick: gap hold=0, lev=10, start=1100, regime=0, mkt_now=1, vwap_side=0, volx=0, stop_atr=3.0, target_r=2, trail=0, short=1, max_open=3, max_new=6, gap=0.01, mode=fade
+  2026-06  EUR   -15.86   (EUR  -0.76/day)   top pick: rs hold=0, lev=10, start=1000, regime=1, mkt_now=1, vwap_side=1, volx=0, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=6, at=1000, k=5, min_rs=0.02
+  2026-07  EUR   -69.02   (EUR  -3.14/day)   top pick: orb hold=0, lev=10, start=945, regime=0, mkt_now=1, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=1.5, trail=0, short=0, max_open=3, max_new=3, range_bars=3
+  2026-08  EUR   -42.36   (EUR  -2.02/day)   top pick: gap hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=0, volx=2.0, stop_atr=1.5, target_r=0, trail=0, short=0, max_open=3, max_new=3, gap=0.02, mode=fade
+  2026-09  EUR   -10.57   (EUR  -0.50/day)   top pick: mom_open hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=2.0, target_r=0, trail=0, short=1, max_open=1, max_new=1, at=1000, move=0.03
+  2026-10  EUR   -45.28   (EUR  -2.06/day)   top pick: gap hold=0, lev=10, start=1000, regime=0, mkt_now=0, vwap_side=0, volx=2.0, stop_atr=1.0, target_r=0, trail=0, short=0, max_open=3, max_new=3, gap=0.05, mode=go
+  2026-11  EUR   -18.90   (EUR  -1.26/day)   top pick: gap hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=1, volx=0, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=3, gap=0.03, mode=go
+  TOTAL EUR 74.51 over 163 days = EUR 0.46 per day
 
 Walk-forward, the bot uses the 20 best methods of the previous 3 months each month:
-  2026-04  EUR     9.40   (EUR   0.45/day)   top pick: gap hold=0, lev=10, start=1100, regime=0, mkt_now=0, vwap_side=0, volx=1.5, stop_atr=2.0, target_r=3, trail=0, short=1, max_open=3, max_new=6, gap=0.02, mode=go
-  2026-05  EUR   137.89   (EUR   6.89/day)   top pick: rs hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=3, trail=0, short=1, max_open=3, max_new=6, at=1030, k=3, min_rs=0.02
-  2026-06  EUR   -59.11   (EUR  -2.81/day)   top pick: swing_mom hold=5, lev=3, start=1030, regime=1, mkt_now=0, vwap_side=0, volx=0, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=6, look=ret20, k=3, at=1000
-  2026-07  EUR  -126.90   (EUR  -5.77/day)   top pick: swing_mom hold=5, lev=3, start=1030, regime=1, mkt_now=0, vwap_side=0, volx=0, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=6, look=ret20, k=3, at=1000
-  2026-08  EUR    25.87   (EUR   1.23/day)   top pick: gap hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=0, volx=0, stop_atr=2.0, target_r=3, trail=0, short=1, max_open=3, max_new=3, gap=0.01, mode=go
-  2026-09  EUR     6.52   (EUR   0.31/day)   top pick: gap hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=0, volx=0, stop_atr=2.0, target_r=3, trail=0, short=1, max_open=3, max_new=3, gap=0.01, mode=go
-  2026-10  EUR   -62.05   (EUR  -2.82/day)   top pick: mom_open hold=0, lev=10, start=1000, regime=0, mkt_now=0, vwap_side=0, volx=1.2, stop_atr=1.5, target_r=2, trail=1, short=1, max_open=3, max_new=3, at=1000, move=0.03
-  2026-11  EUR   -21.13   (EUR  -1.41/day)   top pick: rs hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=3, trail=0, short=1, max_open=3, max_new=6, at=1030, k=3, min_rs=0.02
-  TOTAL EUR -89.52 over 163 days = EUR -0.55 per day
+  2026-04  EUR    69.15   (EUR   3.29/day)   top pick: gap hold=0, lev=10, start=1100, regime=0, mkt_now=1, vwap_side=0, volx=0, stop_atr=3.0, target_r=2, trail=0, short=1, max_open=3, max_new=6, gap=0.01, mode=fade
+  2026-05  EUR   152.57   (EUR   7.63/day)   top pick: gap hold=0, lev=10, start=1100, regime=0, mkt_now=1, vwap_side=0, volx=0, stop_atr=3.0, target_r=2, trail=0, short=1, max_open=3, max_new=6, gap=0.01, mode=fade
+  2026-06  EUR   -49.44   (EUR  -2.35/day)   top pick: rs hold=0, lev=10, start=1000, regime=1, mkt_now=1, vwap_side=1, volx=0, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=6, at=1000, k=5, min_rs=0.02
+  2026-07  EUR  -146.77   (EUR  -6.67/day)   top pick: orb hold=0, lev=10, start=945, regime=0, mkt_now=1, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=1.5, trail=0, short=0, max_open=3, max_new=3, range_bars=3
+  2026-08  EUR    25.50   (EUR   1.21/day)   top pick: gap hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=0, volx=2.0, stop_atr=1.5, target_r=0, trail=0, short=0, max_open=3, max_new=3, gap=0.02, mode=fade
+  2026-09  EUR    14.47   (EUR   0.69/day)   top pick: mom_open hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=2.0, target_r=0, trail=0, short=1, max_open=1, max_new=1, at=1000, move=0.03
+  2026-10  EUR   -91.81   (EUR  -4.17/day)   top pick: gap hold=0, lev=10, start=1000, regime=0, mkt_now=0, vwap_side=0, volx=2.0, stop_atr=1.0, target_r=0, trail=0, short=0, max_open=3, max_new=3, gap=0.05, mode=go
+  2026-11  EUR   -20.19   (EUR  -1.35/day)   top pick: gap hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=1, volx=0, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=3, gap=0.03, mode=go
+  TOTAL EUR -46.52 over 163 days = EUR -0.29 per day
 
 Top 10 methods in hindsight (NOT proof, shown so you can see what they are):
-  EUR      808  gap hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=1, volx=2.0, stop_atr=3.0, target_r=0, trail=0, short=1, max_open=3, max_new=3, gap=0.02, mode=go
-  EUR      786  gap hold=0, lev=10, start=1030, regime=1, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=0, trail=0, short=1, max_open=3, max_new=6, gap=0.01, mode=go
-  EUR      752  mom_open hold=0, lev=10, start=1100, regime=1, mkt_now=0, vwap_side=1, volx=1.5, stop_atr=3.0, target_r=0, trail=0, short=1, max_open=3, max_new=1, at=1030, move=0.02
-  EUR      657  rs hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=3, trail=0, short=1, max_open=3, max_new=6, at=1030, k=3, min_rs=0.02
-  EUR      613  rs hold=0, lev=10, start=945, regime=1, mkt_now=0, vwap_side=0, volx=1.2, stop_atr=3.0, target_r=2, trail=0, short=1, max_open=3, max_new=1, at=1000, k=5, min_rs=0.02
-  EUR      606  mom_open hold=2, lev=3, start=945, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=0, trail=0, short=0, max_open=3, max_new=3, at=1030, move=0.03
-  EUR      597  rs hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=0, trail=0, short=0, max_open=3, max_new=3, at=1030, k=5, min_rs=0.005
-  EUR      570  rs hold=0, lev=10, start=1100, regime=1, mkt_now=0, vwap_side=0, volx=1.2, stop_atr=3.0, target_r=1.5, trail=0, short=0, max_open=1, max_new=6, at=1000, k=5, min_rs=0.02
-  EUR      560  rs hold=0, lev=10, start=1100, regime=1, mkt_now=0, vwap_side=0, volx=1.2, stop_atr=3.0, target_r=0, trail=0, short=1, max_open=1, max_new=1, at=1030, k=5, min_rs=0.02
-  EUR      553  rs hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=0, trail=0, short=0, max_open=1, max_new=3, at=1030, k=2, min_rs=0.005
+  EUR      976  mom_open hold=0, lev=10, start=1000, regime=1, mkt_now=0, vwap_side=1, volx=0, stop_atr=2.0, target_r=2, trail=0, short=0, max_open=3, max_new=6, at=1000, move=0.03
+  EUR      957  mom_open hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=0, trail=0, short=0, max_open=3, max_new=1, at=1000, move=0.02
+  EUR      942  mom_open hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=0, volx=2.0, stop_atr=3.0, target_r=0, trail=0, short=0, max_open=1, max_new=1, at=1000, move=0.02
+  EUR      874  mom_open hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=1, volx=2.0, stop_atr=1.5, target_r=0, trail=0, short=0, max_open=1, max_new=6, at=1000, move=0.03
+  EUR      869  mom_open hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=2.0, target_r=0, trail=0, short=1, max_open=1, max_new=1, at=1000, move=0.03
+  EUR      855  rs hold=0, lev=10, start=945, regime=0, mkt_now=0, vwap_side=0, volx=1.2, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=3, max_new=1, at=1000, k=5, min_rs=0.005
+  EUR      843  rs hold=0, lev=10, start=1000, regime=1, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=1, max_new=3, at=1000, k=1, min_rs=0.0
+  EUR      836  mom_open hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=2.0, target_r=3, trail=0, short=1, max_open=1, max_new=6, at=1000, move=0.02
+  EUR      784  gap hold=0, lev=10, start=1030, regime=0, mkt_now=0, vwap_side=1, volx=2.0, stop_atr=3.0, target_r=0, trail=0, short=1, max_open=3, max_new=3, gap=0.02, mode=go
+  EUR      778  mom_open hold=0, lev=10, start=1000, regime=1, mkt_now=0, vwap_side=1, volx=1.2, stop_atr=3.0, target_r=2, trail=0, short=0, max_open=1, max_new=6, at=1000, move=0.01
 
