@@ -26,6 +26,14 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import daytrader_backtest as base  # noqa: E402
 
 N_METHODS = 10000
+UNIVERSE = """AAPL MSFT NVDA AMZN META GOOGL TSLA AVGO AMD NFLX ORCL CRM ADBE INTC QCOM TXN MU AMAT LRCX KLAC
+MRVL ARM SMCI DELL HPQ IBM CSCO ANET PANW CRWD ZS NET DDOG SNOW MDB PLTR SHOP UBER LYFT ABNB DASH BKNG EXPE
+MAR HLT RCL CCL NCLH DAL UAL AAL LUV BA GE CAT DE HON MMM RTX LMT NOC GD UPS FDX JPM BAC WFC C GS MS SCHW
+AXP V MA PYPL COIN HOOD SOFI AFRM MSTR RIOT MARA XOM CVX COP OXY SLB HAL DVN EOG MPC VLO PSX LLY UNH JNJ
+PFE MRK ABBV AMGN GILD BMY REGN VRTX MRNA BIIB ISRG TMO DHR ABT MDT CVS CI HUM WMT COST TGT HD LOW NKE
+SBUX MCD CMG LULU DIS CMCSA T VZ TMUS KO PEP PG RBLX U SPOT PINS SNAP TTD ROKU ZM DOCU TWLO OKTA SE MELI
+BABA PDD JD NIO RIVN LCID F GM TSM ASML""".split()
+base.SYMBOLS = UNIVERSE
 SEED = 7
 EUR = base.EURUSD
 SLIP = base.SLIPPAGE
@@ -310,7 +318,7 @@ def cmd_merge():
         print(s, flush=True); lines.append(s)
 
     say("10,000-method search: %d methods replayed, %d stocks, %s..%s (%d trading days)" % (
-        len(table), len(base.SYMBOLS), days[0], days[-1], len(days)))
+        len(table), len(set(sym for d in S for sym in S[d])), days[0], days[-1], len(days)))
     say("EUR %.0f per trade. Same-day trades up to x10, multi-day trades up to x3 (overnight gaps)." % STAKE)
     say("")
     for fee in FEES:
