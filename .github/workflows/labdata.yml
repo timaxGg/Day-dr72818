@@ -1,0 +1,29 @@
+# Builds the compact lab data from the history artifact and pushes it to the "labdata" branch.
+name: Lab data
+on:
+  push:
+    branches: [backtest]
+    paths: [backtest/export_lab.py, .github/workflows/labdata.yml]
+  workflow_dispatch: {}
+permissions:
+  contents: write
+  actions: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/download-artifact@v4
+        with: { name: hist, path: backtest, run-id: 45020796171, github-token: "${{ github.token }}" }
+      - run: cd backtest && tar xzf hist.tgz && python export_lab.py && ls -la lab_data.json.gz
+      - name: Push to the labdata branch
+        run: |
+          mkdir /tmp/ld && cp backtest/lab_data.json.gz /tmp/ld/ && cd /tmp/ld
+          split -b 45m lab_data.json.gz lab_data.part.
+          rm lab_data.json.gz
+          git init -q -b labdata && git config user.name "backtest-bot" && git config user.email "backtest-bot@users.noreply.github.com"
+          git add . && git commit -q -m "Lab data (2023-2025, stocks in play)"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" labdata
