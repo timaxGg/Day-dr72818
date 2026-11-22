@@ -43,6 +43,7 @@ IDX = base.SLOT_INDEX
 FEES = [1.0, 0.35]           # USD per order, applied afterwards
 HERE = base.HERE
 PARTS = os.path.join(HERE, "parts")
+RESULTS = "search_results.txt"
 
 
 # ------------------------------------------------------------------ data
@@ -360,7 +361,7 @@ def cmd_merge():
         for t, i in full[:10]:
             say("  EUR %8.0f  %s" % (t, describe(methods[i])))
         say("")
-    with open(os.path.join(HERE, "search_results.txt"), "w", encoding="utf-8") as f:
+    with open(os.path.join(HERE, RESULTS), "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
 
 

@@ -2,8 +2,6 @@
 # then picks methods month by month (walk-forward) and saves backtest/search_results.txt.
 name: Search
 on:
-  push:
-    branches: [backtest]
   workflow_dispatch: {}
 permissions:
   contents: write
