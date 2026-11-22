@@ -1,0 +1,36 @@
+# ORB lab: opening range breakout on stocks in play, improvements tested walk-forward.
+# Saves backtest/orb_results.txt.
+name: ORB lab
+on:
+  push:
+    branches: [backtest]
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency:
+  group: orb
+  cancel-in-progress: true
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Download data
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+        run: cd backtest && python orb_lab.py data
+      - name: Run the ORB lab
+        run: cd backtest && python orb_lab.py
+      - name: Show the results on the run page
+        run: '{ echo "```"; cat backtest/orb_results.txt; echo "```"; } >> "$GITHUB_STEP_SUMMARY"'
+      - name: Save the results in the repo
+        run: |
+          git config user.name "backtest-bot"
+          git config user.email "backtest-bot@users.noreply.github.com"
+          git add backtest/orb_results.txt
+          git commit -m "ORB results [skip ci]" || exit 0
+          git pull --rebase && git push

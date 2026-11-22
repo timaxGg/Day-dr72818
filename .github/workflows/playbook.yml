@@ -2,8 +2,6 @@
 # Saves backtest/playbook_results.txt.
 name: Playbook
 on:
-  push:
-    branches: [backtest]
   workflow_dispatch: {}
 permissions:
   contents: write
